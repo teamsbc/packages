@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        2
+Release:        3
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -51,6 +51,9 @@ install -m 644 %{_sourcedir}/teamsbc*repo %{buildroot}%{_sysconfdir}/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-standard.repo
 
 %changelog
+* Fri Nov 07 2025 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-2
+- Point to new COPR group repositories.
+
 * Thu Nov 06 2025 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-2
 - Create `-common` and `-standard` subpackage.
 
