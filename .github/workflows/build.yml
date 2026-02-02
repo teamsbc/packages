@@ -1,0 +1,65 @@
+name: Build SRPMs
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-rpms:
+    strategy:
+      matrix:
+        repository:
+          - common
+        build:
+#          - distro: fedora
+#            version: 42
+#            arch: x86_64
+          - distro: fedora
+            version: 43
+            arch: x86_64
+#          - distro: fedora
+#            version: 44
+#            arch: x86_64
+    runs-on: ubuntu-latest
+    container: 
+      image: ghcr.io/teamsbc/ci-rpmbuild:main
+      options: --privileged
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v6
+      - name: "Setup"
+        run: |
+          echo "%_topdir %(pwd)" >> ~/.rpmmacros
+          mkdir /rpms/
+          mkdir /repo/
+      - name: "Build"
+        run: |
+          for DIR in ./fedora/${{ matrix.repository }}/*/; do
+            pushd $DIR
+            mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
+            cp -v *.* SOURCES
+            cp -v *.spec SPECS
+            rpmbuild -ba *.spec
+            popd
+          done
+      - name: "Copy"
+        env:
+          REPO: /rpms/${{ matrix.build.distro }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+        run: |
+          mkdir -p $REPO/
+          find ./fedora/${{ matrix.repository }} -name '*.rpm' -exec mv -t $REPO {} +
+      - name: "Repository"
+        env:
+          REPO: /rpms/${{ matrix.build.distro }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+        run: |
+          cd $REPO/
+          createrepo_c .
+      - name: "Upload"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp --recursive /rpms \
+            "s3://teamsbc-packages/" \
+            --endpoint-url ${{ secrets.R2_ENDPOINT }} \
+            --no-progress
