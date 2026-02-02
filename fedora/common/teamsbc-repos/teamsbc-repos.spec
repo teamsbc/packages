@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        3
+Release:        4
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -13,7 +13,6 @@ Requires:       system-release(%{version})
 BuildArch:      noarch
 
 Source1:        teamsbc-common.repo
-Source2:        teamsbc-standard.repo
 
 Requires:       teamsbc-repos-common = %{version}-%{release}
 
@@ -24,13 +23,6 @@ Fedora package repository files for yum and dnf.
 Summary: Fedora TeamSBC Remix package repositories.
 
 %description common
-Fedora package repository files for yum and dnf.
-
-%package standard
-Summary:  Fedora TeamSBC Remix package repositories.
-Requires: teamsbc-repos-common
-
-%description standard
 Fedora package repository files for yum and dnf.
 
 %prep
@@ -47,10 +39,10 @@ install -m 644 %{_sourcedir}/teamsbc*repo %{buildroot}%{_sysconfdir}/yum.repos.d
 %dir /etc/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-common.repo
 
-%files standard
-%config(noreplace) /etc/yum.repos.d/teamsbc-standard.repo
-
 %changelog
+* Mon Feb 02 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-4
+- Point to new packages.teamsbc.net domain.
+
 * Fri Nov 07 2025 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-3
 - Point to new COPR group repositories.
 

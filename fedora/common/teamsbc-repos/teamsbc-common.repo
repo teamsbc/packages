@@ -1,10 +1,9 @@
-[copr:copr.fedorainfracloud.org:group_teamsbc:fedora-common]
-name=Copr repo for fedora-common owned by @teamsbc
-baseurl=https://download.copr.fedorainfracloud.org/results/@teamsbc/fedora-common/fedora-$releasever-$basearch/
+[teamsbc-common]
+name=TeamSBC Common
+baseurl=https://packages.teamsbc.org/fedora/$releasever/$basearch/common/
 type=rpm-md
 skip_if_unavailable=True
-gpgcheck=1
-gpgkey=https://download.copr.fedorainfracloud.org/results/@teamsbc/fedora-common/pubkey.gpg
+gpgcheck=0
 repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
