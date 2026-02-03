@@ -1,0 +1,9 @@
+[teamsbc-common]
+name=TeamSBC $releasever - $basearch - Common (Main)
+baseurl=https://packages.teamsbc.net/main/$releasever/$basearch/common/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=0
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1

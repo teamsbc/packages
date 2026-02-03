@@ -3,7 +3,7 @@ name: Build SRPMs
 on:
   push:
     paths:
-      - fedora/**
+      - common/**
     branches:
       - main
   workflow_dispatch:
@@ -36,7 +36,7 @@ jobs:
           mkdir /repo/
       - name: "Build"
         run: |
-          for DIR in ./fedora/${{ matrix.repository }}/*/; do
+          for DIR in ./${{ matrix.repository }}/*/; do
             pushd $DIR
             mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
             cp -v *.* SOURCES
@@ -46,13 +46,13 @@ jobs:
           done
       - name: "Copy"
         env:
-          REPO: /rpms/${{ github.ref_name }}/${{ matrix.build.distro }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+          REPO: /rpms/${{ github.ref_name }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
           mkdir -p $REPO/
-          find ./fedora/${{ matrix.repository }} -name '*.rpm' -exec mv -t $REPO {} +
+          find ./${{ matrix.repository }} -name '*.rpm' -exec mv -t $REPO {} +
       - name: "Repository"
         env:
-          REPO: /rpms/${{ github.ref_name }}/${{ matrix.build.distro }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+          REPO: /rpms/${{ github.ref_name }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
           cd $REPO/
           createrepo_c .

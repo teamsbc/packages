@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        7
+Release:        8
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -40,6 +40,9 @@ install -m 644 %{_sourcedir}/teamsbc*repo %{buildroot}%{_sysconfdir}/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-common.repo
 
 %changelog
+* Tue Feb 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-8
+- Drop Fedora from repository URL.
+
 * Tue Feb 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-7
 - Include branch in repository URL.
 
