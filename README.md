@@ -1,11 +1,11 @@
 # Packages
 
-This repository contains the RPM packages for the [Fedora TeamSBC Remix](https://teamsbc.org/). The packages are built on Fedora's [Community Projects](https://copr.fedorainfracloud.org) (COPR).
+This repository contains the RPM packages for the [TeamSBC Remix](https://teamsbc.org/). The packages are built in GitHub Actions and uploaded to the repositories on merge to `main`.
 
 ## Repositories
 
 Packages end up in a few different repositories.
 
-### Fedora-Common
+### Common
 
-The `fedora-common` [repository](https://copr.fedorainfracloud.org/coprs/g/teamsbc/fedora-common/) contains Fedora packages that are used by all TeamSBC variants.
+The `common` repository contains packages that are used by all TeamSBC variants.
