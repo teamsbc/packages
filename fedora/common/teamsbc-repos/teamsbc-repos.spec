@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        5
+Release:        6
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -40,6 +40,9 @@ install -m 644 %{_sourcedir}/teamsbc*repo %{buildroot}%{_sysconfdir}/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-common.repo
 
 %changelog
+* Mon Feb 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-6
+- Slightly prettier repository name.
+
 * Mon Feb 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-5
 - Actually point to the correct .net domain, not .org.
 
