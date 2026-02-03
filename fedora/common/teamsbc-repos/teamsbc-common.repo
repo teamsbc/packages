@@ -1,6 +1,6 @@
 [teamsbc-common]
 name=TeamSBC Common
-baseurl=https://packages.teamsbc.org/fedora/$releasever/$basearch/common/
+baseurl=https://packages.teamsbc.net/fedora/$releasever/$basearch/common/
 type=rpm-md
 skip_if_unavailable=True
 gpgcheck=0
