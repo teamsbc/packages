@@ -38,7 +38,6 @@ jobs:
     runs-on: ${{ matrix.build.runner }}
     container: 
       image: ghcr.io/teamsbc/ci-packages:${{ matrix.build.distro }}-${{ matrix.build.version }}
-      options: --privileged
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v6
