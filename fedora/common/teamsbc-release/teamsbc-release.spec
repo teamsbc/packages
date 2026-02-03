@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        3
+Release:        4
 Summary:        Fedora TeamSBC Remix release files
 
 License:        MIT
@@ -68,7 +68,6 @@ Provides:  system-release(%{version})
 Conflicts: fedora-release
 Conflicts: fedora-release-identity
 Requires:  teamsbc-release-common
-Requires:  teamsbc-repos-standard
 
 Recommends: teamsbc-release-identity-standard
 
@@ -174,6 +173,9 @@ EOF
 %{_prefix}/lib/os-release.standard
 
 %changelog
+* Tue Feb 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-4
+- Remove dependency on `teamsbc-repos-standard` for the standard subpackage.
+
 * Thu Nov 06 2025 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-3
 - Dependency on `teamsbc-repos-standard` for the standard subpackage.
 
