@@ -11,18 +11,18 @@ jobs:
         repository:
           - common
         build:
-#          - distro: fedora
-#            version: 42
-#            arch: x86_64
+          - distro: fedora
+            version: 42
+            arch: x86_64
           - distro: fedora
             version: 43
             arch: x86_64
-#          - distro: fedora
-#            version: 44
-#            arch: x86_64
+          - distro: fedora
+            version: 44
+            arch: x86_64
     runs-on: ubuntu-latest
     container: 
-      image: ghcr.io/teamsbc/ci-rpmbuild:main
+      image: ghcr.io/teamsbc/ci-packages:${{ matrix.build.distro }}-${{ matrix.build.version }}
       options: --privileged
     steps:
       - name: "Checkout Code"
