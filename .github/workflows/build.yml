@@ -2,6 +2,10 @@ name: Build SRPMs
 
 on:
   push:
+    paths:
+      - fedora/**
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
