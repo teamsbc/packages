@@ -46,13 +46,13 @@ jobs:
           done
       - name: "Copy"
         env:
-          REPO: /rpms/${{ github.ref_name }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+          REPO: /rpms/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
           mkdir -p $REPO/
           find ./${{ matrix.repository }} -name '*.rpm' -exec mv -t $REPO {} +
       - name: "Repository"
         env:
-          REPO: /rpms/${{ github.ref_name }}/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+          REPO: /rpms/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
           cd $REPO/
           createrepo_c .
