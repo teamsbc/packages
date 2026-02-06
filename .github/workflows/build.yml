@@ -23,6 +23,14 @@ jobs:
             version: 44
             arch: aarch64
             runner: ubuntu-24.04-arm
+          - distro: fedora
+            version: 45
+            arch: x86_64
+            runner: ubuntu-latest
+          - distro: fedora
+            version: 45
+            arch: aarch64
+            runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.build.runner }}
     container: 
       image: ghcr.io/teamsbc/ci-packages:${{ matrix.build.distro }}-${{ matrix.build.version }}
