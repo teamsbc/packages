@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - common/**
+      - .github/workflows/build.yml
     branches:
       - main
   workflow_dispatch:
