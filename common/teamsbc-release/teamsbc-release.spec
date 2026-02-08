@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        4
+Release:        5
 Summary:        Fedora TeamSBC Remix release files
 
 License:        MIT
@@ -117,7 +117,7 @@ DEFAULT_HOSTNAME="teamsbc"
 HOME_URL="https://teamsbc.org/"
 SUPPORT_URL="https://teamsbc.org/"
 DOCUMENTATION_URL="https://teamsbc.org/"
-BUG_REPORT_URL="https://teamsbc.org/"
+BUG_REPORT_URL="https://github.com/teamsbc/distribution/issues"
 EOF
 
 # /etc/issue
@@ -173,6 +173,9 @@ EOF
 %{_prefix}/lib/os-release.standard
 
 %changelog
+* Sun Feb 08 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-5
+- Point bug URL at GitHub.
+
 * Tue Feb 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-4
 - Remove dependency on `teamsbc-repos-standard` for the standard subpackage.
 
