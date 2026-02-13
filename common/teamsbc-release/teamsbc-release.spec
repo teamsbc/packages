@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        5
+Release:        6
 Summary:        Fedora TeamSBC Remix release files
 
 License:        MIT
@@ -25,6 +25,9 @@ Conflicts: fedora-release-identity
 Requires: teamsbc-release-common = %{version}-%{release}
 
 Recommends: teamsbc-release-identity-basic
+
+Source10: 90-default.preset
+Source11: 99-default-disable.preset
 
 %description
 Fedora TeamSBC Remix release files
@@ -150,6 +153,10 @@ cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
 %%fc%{dist_version}     1
 EOF
 
+# default systemd presets
+install -Dm0644 %{SOURCE10} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
+install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
+
 %files common
 %{_prefix}/lib/fedora-release
 %{_prefix}/lib/system-release-cpe
@@ -163,6 +170,9 @@ EOF
 %attr(0644,root,root) %{_prefix}/lib/issue.net
 %config(noreplace) %{_sysconfdir}/issue.net
 %attr(0644,root,root) %{_rpmconfigdir}/macros.d/macros.dist
+%dir %{_prefix}/lib/systemd/system-preset/
+%{_prefix}/lib/systemd/system-preset/90-default.preset
+%{_prefix}/lib/systemd/system-preset/99-default-disable.preset
 
 %files
 %files identity-basic
@@ -173,6 +183,9 @@ EOF
 %{_prefix}/lib/os-release.standard
 
 %changelog
+* Fri Feb 13 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-6
+- Include systemd presets.
+
 * Sun Feb 08 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-5
 - Point bug URL at GitHub.
 
