@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        6
+Release:        7
 Summary:        Fedora TeamSBC Remix release files
 
 License:        MIT
@@ -90,6 +90,37 @@ Requires(meta): teamsbc-release-standard = %{version}-%{release}
 Provides the necessary files for a Fedora installation that is identifying
 itself as Fedora TeamSBC Remix Standard.
 
+%package legacy
+Summary:    Base package for Fedora TeamSBC Remix Standard-specific default configurations
+
+RemovePathPostfixes: .legacy
+
+Provides:  teamsbc-release = %{version}-%{release}
+Provides:  teamsbc-release-variant = %{version}-%{release}
+Provides:  system-release
+Provides:  system-release(%{version})
+Conflicts: fedora-release
+Conflicts: fedora-release-identity
+Requires:  teamsbc-release-common
+
+Recommends: teamsbc-release-identity-legacy
+
+%description legacy
+Provides a base package for Fedora TeamSBC Remix Legacy-specific
+configuration files to depend on as well as Legacy system defaults.
+
+%package identity-legacy
+Summary:    Package providing the identity for Fedora TeamSBC Remix Legacy variant
+
+RemovePathPostfixes: .legacy
+Provides:       teamsbc-release-identity = %{version}-%{release}
+Conflicts:      teamsbc-release-identity
+Requires(meta): teamsbc-release-legacy = %{version}-%{release}
+
+%description identity-legacy
+Provides the necessary files for a Fedora installation that is identifying
+itself as Fedora TeamSBC Remix Legacy.
+
 %prep
 
 %build
@@ -144,6 +175,12 @@ echo "VARIANT=\"TeamSBC Standard\"" >> %{buildroot}%{_prefix}/lib/os-release.sta
 echo "VARIANT_ID=\"teamsbc-standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
 sed -i -e "s|(%{variant_name})|(TeamSBC Standard)|g" %{buildroot}%{_prefix}/lib/os-release.standard
 
+cp -p os-release \
+      %{buildroot}%{_prefix}/lib/os-release.legacy
+echo "VARIANT=\"TeamSBC Legacy\"" >> %{buildroot}%{_prefix}/lib/os-release.legacy
+echo "VARIANT_ID=\"teamsbc-legacy\"" >> %{buildroot}%{_prefix}/lib/os-release.legacy
+sed -i -e "s|(%{variant_name})|(TeamSBC Legacy)|g" %{buildroot}%{_prefix}/lib/os-release.legacy
+
 ln -s ../usr/lib/os-release %{buildroot}%{_sysconfdir}/os-release
 
 install -d -m 755 %{buildroot}%{_rpmconfigdir}/macros.d
@@ -182,7 +219,14 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %files identity-standard
 %{_prefix}/lib/os-release.standard
 
+%files legacy
+%files identity-legacy
+%{_prefix}/lib/os-release.legacy
+
 %changelog
+* Fri Feb 27 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-7
+- Include legacy variant.
+
 * Fri Feb 13 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-6
 - Include systemd presets.
 
