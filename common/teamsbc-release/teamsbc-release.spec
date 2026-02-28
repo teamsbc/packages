@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        8
+Release:        9
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -128,7 +128,7 @@ itself as TeamSBC Legacy.
 %install
 install -d %{buildroot}%{_prefix}/lib
 echo "TeamSBC release %{version}" > %{buildroot}%{_prefix}/lib/fedora-release
-echo "cpe:/o:teamsbc:teamsbc:%{version}" > %{buildroot}%{_prefix}/lib/system-release-cpe
+echo "cpe:/o:teamsbc:%{version}" > %{buildroot}%{_prefix}/lib/system-release-cpe
 
 install -d %{buildroot}%{_sysconfdir}
 ln -s ../usr/lib/fedora-release %{buildroot}%{_sysconfdir}/fedora-release
@@ -146,7 +146,7 @@ VERSION_CODENAME=""
 PRETTY_NAME="TeamSBC Linux %{dist_version} (%{variant_name})"
 ANSI_COLOR="0;38;2;60;110;180"
 LOGO=teamsbc-logo-icon
-CPE_NAME="cpe:/o:fedoraproject:fedora:%{dist_version}"
+CPE_NAME="cpe:/o:teamsbc:%{dist_version}"
 DEFAULT_HOSTNAME="teamsbc"
 HOME_URL="https://teamsbc.org/"
 SUPPORT_URL="https://teamsbc.org/"
@@ -224,6 +224,9 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_prefix}/lib/os-release.legacy
 
 %changelog
+* Sat Feb 29 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
+- Fix up a last reference to fedoraproject.
+
 * Sat Feb 28 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-8
 - Drop usage of "Fedora" without a "Remix" directly attached.
 
