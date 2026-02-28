@@ -3,8 +3,8 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        7
-Summary:        Fedora TeamSBC Remix release files
+Release:        8
+Summary:        TeamSBC release files
 
 License:        MIT
 
@@ -30,10 +30,10 @@ Source10: 90-default.preset
 Source11: 99-default-disable.preset
 
 %description
-Fedora TeamSBC Remix release files
+TeamSBC release files
 
 %package common
-Summary: Fedora TeamSBC Remix release files
+Summary: TeamSBC release files
 
 Requires: teamsbc-release-variant = %{version}-%{release}
 Suggests: teamsbc-release
@@ -46,21 +46,21 @@ Conflicts: fedora-release-common
 
 
 %description common
-Release files common to all Fedora TeamSBC Remix variants
+Release files common to all TeamSBC variants
 
 %package identity-basic
-Summary:    Package providing the basic Fedora TeamSBC Remix identity
+Summary:    Package providing the basic TeamSBC identity
 
 RemovePathPostfixes: .basic
 Provides:  teamsbc-release-identity = %{version}-%{release}
 Conflicts: teamsbc-release-identity
 
 %description identity-basic
-Provides the necessary files for a Fedora TeamSBC Remix installation that is
+Provides the necessary files for a TeamSBC installation that is
 not identifying itself as a particular variant.
 
 %package standard
-Summary:    Base package for Fedora TeamSBC Remix Standard-specific default configurations
+Summary:    Base package for TeamSBC Standard-specific default configurations
 
 RemovePathPostfixes: .standard
 
@@ -75,11 +75,11 @@ Requires:  teamsbc-release-common
 Recommends: teamsbc-release-identity-standard
 
 %description standard
-Provides a base package for Fedora TeamSBC Remix Standard-specific
+Provides a base package for TeamSBC Standard-specific
 configuration files to depend on as well as Standard system defaults.
 
 %package identity-standard
-Summary:    Package providing the identity for Fedora TeamSBC Remix Standard variant
+Summary:    Package providing the identity for TeamSBC Standard variant
 
 RemovePathPostfixes: .standard
 Provides:       teamsbc-release-identity = %{version}-%{release}
@@ -87,11 +87,11 @@ Conflicts:      teamsbc-release-identity
 Requires(meta): teamsbc-release-standard = %{version}-%{release}
 
 %description identity-standard
-Provides the necessary files for a Fedora installation that is identifying
-itself as Fedora TeamSBC Remix Standard.
+Provides the necessary files for a TeamSBC installation that is identifying
+itself as TeamSBC Standard.
 
 %package legacy
-Summary:    Base package for Fedora TeamSBC Remix Standard-specific default configurations
+Summary:    Base package for TeamSBC Standard-specific default configurations
 
 RemovePathPostfixes: .legacy
 
@@ -106,11 +106,11 @@ Requires:  teamsbc-release-common
 Recommends: teamsbc-release-identity-legacy
 
 %description legacy
-Provides a base package for Fedora TeamSBC Remix Legacy-specific
+Provides a base package for TeamSBC Legacy-specific
 configuration files to depend on as well as Legacy system defaults.
 
 %package identity-legacy
-Summary:    Package providing the identity for Fedora TeamSBC Remix Legacy variant
+Summary:    Package providing the identity for TeamSBC Legacy variant
 
 RemovePathPostfixes: .legacy
 Provides:       teamsbc-release-identity = %{version}-%{release}
@@ -118,8 +118,8 @@ Conflicts:      teamsbc-release-identity
 Requires(meta): teamsbc-release-legacy = %{version}-%{release}
 
 %description identity-legacy
-Provides the necessary files for a Fedora installation that is identifying
-itself as Fedora TeamSBC Remix Legacy.
+Provides the necessary files for a TeamSBC installation that is identifying
+itself as TeamSBC Legacy.
 
 %prep
 
@@ -127,8 +127,8 @@ itself as Fedora TeamSBC Remix Legacy.
 
 %install
 install -d %{buildroot}%{_prefix}/lib
-echo "Fedora release %{version}" > %{buildroot}%{_prefix}/lib/fedora-release
-echo "cpe:/o:fedoraproject:fedora:%{version}" > %{buildroot}%{_prefix}/lib/system-release-cpe
+echo "TeamSBC release %{version}" > %{buildroot}%{_prefix}/lib/fedora-release
+echo "cpe:/o:teamsbc:teamsbc:%{version}" > %{buildroot}%{_prefix}/lib/system-release-cpe
 
 install -d %{buildroot}%{_sysconfdir}
 ln -s ../usr/lib/fedora-release %{buildroot}%{_sysconfdir}/fedora-release
@@ -138,14 +138,14 @@ ln -s fedora-release %{buildroot}%{_sysconfdir}/system-release
 
 # /etc/os-release
 cat <<EOF >os-release
-NAME="Fedora Linux"
+NAME="TeamSBC Linux"
 VERSION="%{dist_version} (%{variant_name})"
-ID=fedora
+ID=teamsbc
 VERSION_ID=%{dist_version}
 VERSION_CODENAME=""
-PRETTY_NAME="Fedora Linux %{dist_version} (%{variant_name})"
+PRETTY_NAME="TeamSBC Linux %{dist_version} (%{variant_name})"
 ANSI_COLOR="0;38;2;60;110;180"
-LOGO=fedora-logo-icon
+LOGO=teamsbc-logo-icon
 CPE_NAME="cpe:/o:fedoraproject:fedora:%{dist_version}"
 DEFAULT_HOSTNAME="teamsbc"
 HOME_URL="https://teamsbc.org/"
@@ -171,15 +171,15 @@ cp -p os-release \
 
 cp -p os-release \
       %{buildroot}%{_prefix}/lib/os-release.standard
-echo "VARIANT=\"TeamSBC Standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
+echo "VARIANT=\"Standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
 echo "VARIANT_ID=\"teamsbc-standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
-sed -i -e "s|(%{variant_name})|(TeamSBC Standard)|g" %{buildroot}%{_prefix}/lib/os-release.standard
+sed -i -e "s|(%{variant_name})|(Standard)|g" %{buildroot}%{_prefix}/lib/os-release.standard
 
 cp -p os-release \
       %{buildroot}%{_prefix}/lib/os-release.legacy
-echo "VARIANT=\"TeamSBC Legacy\"" >> %{buildroot}%{_prefix}/lib/os-release.legacy
+echo "VARIANT=\"Legacy\"" >> %{buildroot}%{_prefix}/lib/os-release.legacy
 echo "VARIANT_ID=\"teamsbc-legacy\"" >> %{buildroot}%{_prefix}/lib/os-release.legacy
-sed -i -e "s|(%{variant_name})|(TeamSBC Legacy)|g" %{buildroot}%{_prefix}/lib/os-release.legacy
+sed -i -e "s|(%{variant_name})|(Legacy)|g" %{buildroot}%{_prefix}/lib/os-release.legacy
 
 ln -s ../usr/lib/os-release %{buildroot}%{_sysconfdir}/os-release
 
@@ -224,6 +224,9 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_prefix}/lib/os-release.legacy
 
 %changelog
+* Sat Feb 28 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-8
+- Drop usage of "Fedora" without a "Remix" directly attached.
+
 * Fri Feb 27 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-7
 - Include legacy variant.
 
@@ -243,4 +246,4 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 - Dependency on `teamsbc-repos-common` for the common subpackage.
 
 * Sun Nov 02 2025 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-1
-- Initial setup of Fedora TeamSBC Remix's release package.
+- Initial setup of TeamSBC Fedora Remix's release package.
