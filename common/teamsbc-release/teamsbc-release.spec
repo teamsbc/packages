@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        10
+Release:        11
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -138,6 +138,7 @@ ln -s fedora-release %{buildroot}%{_sysconfdir}/system-release
 
 install -d %{buildroot}%{_sysconfdir}/kernel
 echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
+echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -206,6 +207,7 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/system-release
 %{_sysconfdir}/system-release-cpe
 %{_sysconfdir}/kernel/entry-token
+%{_sysconfdir}/kernel/install.conf
 %attr(0644,root,root) %{_prefix}/lib/issue
 %config(noreplace) %{_sysconfdir}/issue
 %attr(0644,root,root) %{_prefix}/lib/issue.net
@@ -228,10 +230,13 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_prefix}/lib/os-release.legacy
 
 %changelog
+* Tue Apr 21 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-11
+- Create /etc/kernel/install.conf
+
 * Tue Apr 21 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-10
 - Create /etc/kernel/entry-token
 
-* Sat Feb 29 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
+* Sat Feb 28 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
 - Fix up a last reference to fedoraproject.
 
 * Sat Feb 28 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-8
