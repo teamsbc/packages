@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        9
+Release:        10
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -136,6 +136,9 @@ ln -s ../usr/lib/system-release-cpe %{buildroot}%{_sysconfdir}/system-release-cp
 ln -s fedora-release %{buildroot}%{_sysconfdir}/redhat-release
 ln -s fedora-release %{buildroot}%{_sysconfdir}/system-release
 
+install -d %{buildroot}%{_sysconfdir}/kernel
+echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
+
 # /etc/os-release
 cat <<EOF >os-release
 NAME="TeamSBC Linux"
@@ -202,6 +205,7 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/redhat-release
 %{_sysconfdir}/system-release
 %{_sysconfdir}/system-release-cpe
+%{_sysconfdir}/kernel/entry-token
 %attr(0644,root,root) %{_prefix}/lib/issue
 %config(noreplace) %{_sysconfdir}/issue
 %attr(0644,root,root) %{_prefix}/lib/issue.net
@@ -224,6 +228,9 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_prefix}/lib/os-release.legacy
 
 %changelog
+* Tue Apr 21 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-10
+- Create /etc/kernel/entry-token
+
 * Sat Feb 29 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
 - Fix up a last reference to fedoraproject.
 
