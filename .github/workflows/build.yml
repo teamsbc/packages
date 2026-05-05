@@ -39,10 +39,17 @@ jobs:
       - name: "Checkout Code"
         uses: actions/checkout@v6
       - name: "Setup"
+        env:
+          LATEST: /repo/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
           echo "%_topdir %(pwd)" >> ~/.rpmmacros
           mkdir /rpms/
           mkdir /repo/
+          DATED=/repo/${{ github.ref_name }}/$(date +%Y.%m.%d)/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+          mkdir -p $LATEST
+          mkdir -p $DATED
+          echo "LATEST=$LATEST" >> $GITHUB_ENV
+          echo "DATED=$DATED" >> $GITHUB_ENV
       - name: "Build"
         run: |
           for DIR in ./${{ matrix.repository }}/*/; do
@@ -54,23 +61,21 @@ jobs:
             popd
           done
       - name: "Copy"
-        env:
-          REPO: /rpms/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
-          mkdir -p $REPO/
-          find ./${{ matrix.repository }} -name '*.rpm' -exec mv -t $REPO {} +
+          find ./${{ matrix.repository }} -name '*.rpm' -exec mv -t $LATEST {} +
       - name: "Repository"
-        env:
-          REPO: /rpms/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
-          cd $REPO/
+          cd $LATEST/
           createrepo_c .
+      - name: "Copy to dated directory"
+        run: |
+          sudo cp -vra $LATEST/* $DATED/
       - name: "Upload"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
         run: |
-          aws s3 cp --recursive /rpms \
+          aws s3 cp --recursive /repo \
             "s3://teamsbc-packages/" \
             --no-progress
