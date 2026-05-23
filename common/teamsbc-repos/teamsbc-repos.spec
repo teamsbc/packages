@@ -2,8 +2,8 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        9
-Summary:        Fedora TeamSBC Remix package repositories
+Release:        10
+Summary:        TeamSBC package repositories
 
 License:        MIT
 
@@ -17,13 +17,13 @@ Source1:        teamsbc-common.repo
 Requires:       teamsbc-repos-common = %{version}-%{release}
 
 %description
-Fedora package repository files for yum and dnf.
+TeamSBC package repository files for yum and dnf.
 
 %package common
-Summary: Fedora TeamSBC Remix package repositories.
+Summary: TeamSBC package repositories.
 
 %description common
-Fedora package repository files for yum and dnf.
+TeamSBC package repository files for yum and dnf.
 
 %prep
 
@@ -40,6 +40,9 @@ install -m 644 %{_sourcedir}/teamsbc*repo %{buildroot}%{_sysconfdir}/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-common.repo
 
 %changelog
+* Sat May 23 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-10
+- Drop usage of Fedora Remix if both words are not together.
+
 * Wed Feb 04 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
 - Include a latest subdir.
 
