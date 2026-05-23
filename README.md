@@ -12,3 +12,6 @@ Packages end up in a few different repositories.
 ### Common
 
 The `common` repository contains packages that are used by all TeamSBC variants.
+
+- `teamsbc-release`
+- `teamsbc-repos`
