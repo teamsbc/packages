@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        1
+Release:        2
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -12,7 +12,8 @@ Requires:       system-release(%{version})
 
 BuildArch:      noarch
 
-Source1:        50-root.conf.standard
+Source1:        00-esp.conf.standard
+Source2:        50-root.conf.standard
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -44,6 +45,7 @@ Configuration files specific to the Standard TeamSBC variant.
 
 %install
 install -d %{buildroot}%{_prefix}/lib/repart.d
+install -m 644 %{_sourcedir}/00-esp.conf.standard %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.standard
 install -m 644 %{_sourcedir}/50-root.conf.standard %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.standard
 
 %check
@@ -52,8 +54,12 @@ install -m 644 %{_sourcedir}/50-root.conf.standard %{buildroot}%{_prefix}/lib/re
 %dir %{_prefix}/lib/repart.d
 
 %files standard
+%{_prefix}/lib/repart.d/00-esp.conf.standard
 %{_prefix}/lib/repart.d/50-root.conf.standard
 
 %changelog
+* Sun May 31 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-2
+- Include an ESP file for systemd-repart.
+
 * Sun May 24 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-1
 - Initial setup of TeamSBC Fedora Remix's config package.
