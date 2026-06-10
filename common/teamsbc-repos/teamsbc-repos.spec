@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        10
+Release:        11
 Summary:        TeamSBC package repositories
 
 License:        MIT
@@ -40,6 +40,9 @@ install -m 644 %{_sourcedir}/teamsbc*repo %{buildroot}%{_sysconfdir}/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-common.repo
 
 %changelog
+* Wed Jun 10 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-11
+- Set priority on teamsbc repositories.
+
 * Sat May 23 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-10
 - Drop usage of Fedora Remix if both words are not together.
 
