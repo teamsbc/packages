@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        13
+Release:        14
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -111,6 +111,7 @@ ln -s fedora-release %{buildroot}%{_sysconfdir}/system-release
 install -d %{buildroot}%{_sysconfdir}/kernel
 echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf
+echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -180,6 +181,7 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/system-release-cpe
 %{_sysconfdir}/kernel/entry-token
 %{_sysconfdir}/kernel/install.conf
+%{_sysconfdir}/kernel/tries
 %attr(0644,root,root) %{_prefix}/lib/issue
 %config(noreplace) %{_sysconfdir}/issue
 %attr(0644,root,root) %{_prefix}/lib/issue.net
@@ -199,6 +201,9 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf
 
 %changelog
+* Tue Jun 16 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-14
+- Turn on boot counting.
+
 * Tue Jun 16 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
 - Exclude bcm283x-firmware on standard variant.
 
