@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        12
+Release:        13
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -71,6 +71,9 @@ Provides:  system-release(%{version})
 Conflicts: fedora-release
 Conflicts: fedora-release-identity
 Requires:  teamsbc-release-common
+
+# We configure DNF so the location must exist
+Requires:  libdnf5
 
 Recommends: teamsbc-release-identity-standard
 
@@ -157,6 +160,12 @@ cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
 %%fc%{dist_version}     1
 EOF
 
+install -d -m 755 %{buildroot}%{_sysconfdir}/dnf/libdnf5.conf.d
+cat >> %{buildroot}%{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf << EOF
+[main]
+exclude=bcm283x-firmware
+EOF
+
 # default systemd presets
 install -Dm0644 %{SOURCE10} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
@@ -187,8 +196,12 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %files standard
 %files identity-standard
 %{_prefix}/lib/os-release.standard
+%{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf
 
 %changelog
+* Tue Jun 16 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
+- Exclude bcm283x-firmware on standard variant.
+
 * Sat May 16 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-12
 - Drop legacy variant.
 
