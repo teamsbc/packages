@@ -50,6 +50,16 @@ jobs:
           mkdir -p $DATED
           echo "LATEST=$LATEST" >> $GITHUB_ENV
           echo "DATED=$DATED" >> $GITHUB_ENV
+      - name: "Build Requirements"
+        run: |
+          BUILDREQS=""
+          for DIR in ./${{ matrix.repository }}/*/; do
+            pushd $DIR
+            BUILDREQS_ADD=$(rpmspec -q --srpm --buildrequires *.spec | xargs)
+            BUILDREQS="${BUILDREQS_ADD} ${BUILDREQS}"
+            popd
+          done
+          dnf install -y $BUILDREQS
       - name: "Build"
         run: |
           for DIR in ./${{ matrix.repository }}/*/; do
