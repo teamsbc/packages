@@ -16,3 +16,4 @@ The `common` repository contains packages that are used by all TeamSBC variants.
 - `teamsbc-release`
 - `teamsbc-repos`
 - `teamsbc-config`
+- `teamsbc-selinux`
