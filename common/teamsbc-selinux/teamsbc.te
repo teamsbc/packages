@@ -1,0 +1,11 @@
+policy_module(teamsbc,1.0)
+
+# Allow systemd to rename files in VFAT partitions,
+# see: https://github.com/teamsbc/distribution/issues/27#issuecomment-4716640670
+require {
+	type dosfs_t;
+	type init_t;
+	class file rename;
+}
+
+allow init_t dosfs_t:file rename;
