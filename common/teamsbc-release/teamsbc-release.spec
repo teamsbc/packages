@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        21
+Release:        22
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -149,7 +149,7 @@ echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.standard
 echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "initrd_generator=dracut" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "uki_generator=ukify" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
-echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
+echo "mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -252,6 +252,9 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/cmdline.makalu
 
 %changelog
+* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-22
+- Enable `mount.usr=dissect` only for Makalu.
+
 * Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-21
 - Revert `mount.usr=dissect` as it times out trying to find /usr.
 
