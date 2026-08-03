@@ -110,8 +110,9 @@ ln -s fedora-release %{buildroot}%{_sysconfdir}/system-release
 
 install -d %{buildroot}%{_sysconfdir}/kernel
 echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
-echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
+
+echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.standard
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -180,7 +181,6 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/system-release
 %{_sysconfdir}/system-release-cpe
 %{_sysconfdir}/kernel/entry-token
-%{_sysconfdir}/kernel/install.conf
 %{_sysconfdir}/kernel/tries
 %attr(0644,root,root) %{_prefix}/lib/issue
 %config(noreplace) %{_sysconfdir}/issue
@@ -198,9 +198,13 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %files standard
 %files identity-standard
 %{_prefix}/lib/os-release.standard
+%{_sysconfdir}/kernel/install.conf.standard
 %{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf
 
 %changelog
+* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
+- Move kernel/install.conf to variant-specific package.
+
 * Tue Jun 16 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-14
 - Turn on boot counting.
 
