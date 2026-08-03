@@ -15,6 +15,9 @@ BuildArch:      noarch
 Source1:        00-esp.conf.standard
 Source2:        50-root.conf.standard
 
+Source3:        00-esp.conf.makalu
+Source4:        50-root.conf.makalu
+
 Requires:       teamsbc-config-common = %{version}-%{release}
 
 %description
@@ -39,6 +42,19 @@ Requires: teamsbc-config-common
 %description standard
 Configuration files specific to the Standard TeamSBC variant.
 
+%package makalu
+Summary: Fedora TeamSBC Remix Makalu variant configs.
+
+RemovePathPostfixes: .makalu
+
+Provides:  teamsbc-config = %{version}-%{release}
+Conflicts: teamsbc-config
+
+Requires: teamsbc-config-common
+
+%description makalu
+Configuration files specific to the Makalu TeamSBC variant.
+
 %prep
 
 %build
@@ -47,6 +63,8 @@ Configuration files specific to the Standard TeamSBC variant.
 install -d %{buildroot}%{_prefix}/lib/repart.d
 install -m 644 %{_sourcedir}/00-esp.conf.standard %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.standard
 install -m 644 %{_sourcedir}/50-root.conf.standard %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.standard
+install -m 644 %{_sourcedir}/00-esp.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.makalu
+install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.makalu
 
 %check
 
@@ -57,7 +75,14 @@ install -m 644 %{_sourcedir}/50-root.conf.standard %{buildroot}%{_prefix}/lib/re
 %{_prefix}/lib/repart.d/00-esp.conf.standard
 %{_prefix}/lib/repart.d/50-root.conf.standard
 
+%files makalu
+%{_prefix}/lib/repart.d/00-esp.conf.makalu
+%{_prefix}/lib/repart.d/50-root.conf.makalu
+
 %changelog
+* Mon Aug 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-3
+- Include a Makalu subpackage.
+
 * Sun May 31 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-2
 - Include an ESP file for systemd-repart.
 
