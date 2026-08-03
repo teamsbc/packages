@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        19
+Release:        20
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -144,12 +144,12 @@ echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.standard
-echo "root=dissect mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.standard
+echo "mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.standard
 
 echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "initrd_generator=dracut" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "uki_generator=ukify" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
-echo "root=dissect mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
+echo "mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -252,6 +252,9 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/cmdline.makalu
 
 %changelog
+* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-20
+- Revert `root=dissect` as `dracut` cannot handle it.
+
 * Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-19
 - Set our default cmdline to dissect.
 
