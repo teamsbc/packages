@@ -144,7 +144,10 @@ echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.standard
+echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.standard
+
 echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
+echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -237,14 +240,19 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %files identity-standard
 %{_prefix}/lib/os-release.standard
 %{_sysconfdir}/kernel/install.conf.standard
+%{_sysconfdir}/kernel/cmdline.standard
 %{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf
 
 %files makalu
 %files identity-makalu
 %{_prefix}/lib/os-release.makalu
 %{_sysconfdir}/kernel/install.conf.makalu
+%{_sysconfdir}/kernel/cmdline.makalu
 
 %changelog
+* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-17
+- Ship a kernel cmdline.
+
 * Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-16
 - Create a Makalu variant.
 
