@@ -93,6 +93,37 @@ Requires(meta): teamsbc-release-standard = %{version}-%{release}
 Provides the necessary files for a TeamSBC installation that is identifying
 itself as TeamSBC Standard.
 
+%package makalu
+Summary:    Base package for TeamSBC Makalu-specific default configurations
+
+RemovePathPostfixes: .makalu
+
+Provides:  teamsbc-release = %{version}-%{release}
+Provides:  teamsbc-release-variant = %{version}-%{release}
+Provides:  system-release
+Provides:  system-release(%{version})
+Conflicts: fedora-release
+Conflicts: fedora-release-identity
+Requires:  teamsbc-release-common
+
+Recommends: teamsbc-release-identity-makalu
+
+%description makalu
+Provides a base package for TeamSBC Makalu-specific
+configuration files to depend on as well as Makalu system defaults.
+
+%package identity-makalu
+Summary:    Package providing the identity for TeamSBC Makalu variant
+
+RemovePathPostfixes: .makalu
+Provides:       teamsbc-release-identity = %{version}-%{release}
+Conflicts:      teamsbc-release-identity
+Requires(meta): teamsbc-release-makalu = %{version}-%{release}
+
+%description identity-makalu
+Provides the necessary files for a TeamSBC installation that is identifying
+itself as TeamSBC Standard.
+
 %prep
 
 %build
@@ -113,6 +144,7 @@ echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.standard
+echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -152,6 +184,12 @@ cp -p os-release \
 echo "VARIANT=\"Standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
 echo "VARIANT_ID=\"teamsbc-standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
 sed -i -e "s|(%{variant_name})|(Standard)|g" %{buildroot}%{_prefix}/lib/os-release.standard
+
+cp -p os-release \
+      %{buildroot}%{_prefix}/lib/os-release.makalu
+echo "VARIANT=\"Makalu\"" >> %{buildroot}%{_prefix}/lib/os-release.makalu
+echo "VARIANT_ID=\"teamsbc-makalu\"" >> %{buildroot}%{_prefix}/lib/os-release.makalu
+sed -i -e "s|(%{variant_name})|(Makalu)|g" %{buildroot}%{_prefix}/lib/os-release.makalu
 
 ln -s ../usr/lib/os-release %{buildroot}%{_sysconfdir}/os-release
 
@@ -201,8 +239,16 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/install.conf.standard
 %{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf
 
+%files makalu
+%files identity-makalu
+%{_prefix}/lib/os-release.makalu
+%{_sysconfdir}/kernel/install.conf.makalu
+
 %changelog
-* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
+* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-16
+- Create a Makalu variant.
+
+* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-15
 - Move kernel/install.conf to variant-specific package.
 
 * Tue Jun 16 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-14
