@@ -147,6 +147,8 @@ echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.standard
 echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.standard
 
 echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
+echo "initrd_generator=dracut" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
+echo "uki_generator=ukify" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
 
 # /etc/os-release
@@ -250,6 +252,12 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/cmdline.makalu
 
 %changelog
+* Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-18
+- Further configure Makalu's kernel-install. When the layout is set to
+  UKI and the UKI generator is not set dracut builds an uki.efi so it
+  tries to build the entire UKI itself instead of just building an
+  initrd that 60-ukify can then use.
+
 * Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-17
 - Ship a kernel cmdline.
 
