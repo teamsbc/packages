@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        22
+Release:        23
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -59,10 +59,10 @@ Conflicts: teamsbc-release-identity
 Provides the necessary files for a TeamSBC installation that is
 not identifying itself as a particular variant.
 
-%package standard
-Summary:    Base package for TeamSBC Standard-specific default configurations
+%package lhotse
+Summary:    Base package for TeamSBC Lhotse-specific default configurations
 
-RemovePathPostfixes: .standard
+RemovePathPostfixes: .lhotse
 
 Provides:  teamsbc-release = %{version}-%{release}
 Provides:  teamsbc-release-variant = %{version}-%{release}
@@ -75,23 +75,23 @@ Requires:  teamsbc-release-common
 # We configure DNF so the location must exist
 Requires:  libdnf5
 
-Recommends: teamsbc-release-identity-standard
+Recommends: teamsbc-release-identity-lhotse
 
-%description standard
-Provides a base package for TeamSBC Standard-specific
-configuration files to depend on as well as Standard system defaults.
+%description lhotse
+Provides a base package for TeamSBC Lhotse-specific
+configuration files to depend on as well as Lhotse system defaults.
 
-%package identity-standard
-Summary:    Package providing the identity for TeamSBC Standard variant
+%package identity-lhotse
+Summary:    Package providing the identity for TeamSBC Lhotse variant
 
-RemovePathPostfixes: .standard
+RemovePathPostfixes: .lhotse
 Provides:       teamsbc-release-identity = %{version}-%{release}
 Conflicts:      teamsbc-release-identity
-Requires(meta): teamsbc-release-standard = %{version}-%{release}
+Requires(meta): teamsbc-release-lhotse = %{version}-%{release}
 
-%description identity-standard
+%description identity-lhotse
 Provides the necessary files for a TeamSBC installation that is identifying
-itself as TeamSBC Standard.
+itself as TeamSBC Lhotse.
 
 %package makalu
 Summary:    Base package for TeamSBC Makalu-specific default configurations
@@ -122,7 +122,7 @@ Requires(meta): teamsbc-release-makalu = %{version}-%{release}
 
 %description identity-makalu
 Provides the necessary files for a TeamSBC installation that is identifying
-itself as TeamSBC Standard.
+itself as TeamSBC Makalu.
 
 %prep
 
@@ -143,8 +143,8 @@ install -d %{buildroot}%{_sysconfdir}/kernel
 echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
-echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.standard
-echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.standard
+echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
+echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.lhotse
 
 echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "initrd_generator=dracut" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
@@ -185,10 +185,10 @@ cp -p os-release \
       %{buildroot}%{_prefix}/lib/os-release.basic
 
 cp -p os-release \
-      %{buildroot}%{_prefix}/lib/os-release.standard
-echo "VARIANT=\"Standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
-echo "VARIANT_ID=\"teamsbc-standard\"" >> %{buildroot}%{_prefix}/lib/os-release.standard
-sed -i -e "s|(%{variant_name})|(Standard)|g" %{buildroot}%{_prefix}/lib/os-release.standard
+      %{buildroot}%{_prefix}/lib/os-release.lhotse
+echo "VARIANT=\"Lhotse\"" >> %{buildroot}%{_prefix}/lib/os-release.lhotse
+echo "VARIANT_ID=\"teamsbc-lhotse\"" >> %{buildroot}%{_prefix}/lib/os-release.lhotse
+sed -i -e "s|(%{variant_name})|(Lhotse)|g" %{buildroot}%{_prefix}/lib/os-release.lhotse
 
 cp -p os-release \
       %{buildroot}%{_prefix}/lib/os-release.makalu
@@ -238,11 +238,11 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %files identity-basic
 %{_prefix}/lib/os-release.basic
 
-%files standard
-%files identity-standard
-%{_prefix}/lib/os-release.standard
-%{_sysconfdir}/kernel/install.conf.standard
-%{_sysconfdir}/kernel/cmdline.standard
+%files lhotse
+%files identity-lhotse
+%{_prefix}/lib/os-release.lhotse
+%{_sysconfdir}/kernel/install.conf.lhotse
+%{_sysconfdir}/kernel/cmdline.lhotse
 %{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf
 
 %files makalu
@@ -252,6 +252,9 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/cmdline.makalu
 
 %changelog
+* Tue Aug 4 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-23
+- Rename `standard` to `lhotse`.
+
 * Mon Aug 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-22
 - Enable `mount.usr=dissect` only for Makalu.
 

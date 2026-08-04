@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        2
+Release:        3
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -12,8 +12,8 @@ Requires:       system-release(%{version})
 
 BuildArch:      noarch
 
-Source1:        00-esp.conf.standard
-Source2:        50-root.conf.standard
+Source1:        00-esp.conf.lhotse
+Source2:        50-root.conf.lhotse
 
 Source3:        00-esp.conf.makalu
 Source4:        50-root.conf.makalu
@@ -29,18 +29,18 @@ Summary: Fedora TeamSBC Remix common configs.
 %description common
 Configuration files shared across all TeamSBC variants.
 
-%package standard
-Summary: Fedora TeamSBC Remix Standard variant configs.
+%package lhotse
+Summary: Fedora TeamSBC Remix Lhotse variant configs.
 
-RemovePathPostfixes: .standard
+RemovePathPostfixes: .lhotse
 
 Provides:  teamsbc-config = %{version}-%{release}
 Conflicts: teamsbc-config
 
 Requires: teamsbc-config-common
 
-%description standard
-Configuration files specific to the Standard TeamSBC variant.
+%description lhotse
+Configuration files specific to the Lhotse TeamSBC variant.
 
 %package makalu
 Summary: Fedora TeamSBC Remix Makalu variant configs.
@@ -61,8 +61,8 @@ Configuration files specific to the Makalu TeamSBC variant.
 
 %install
 install -d %{buildroot}%{_prefix}/lib/repart.d
-install -m 644 %{_sourcedir}/00-esp.conf.standard %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.standard
-install -m 644 %{_sourcedir}/50-root.conf.standard %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.standard
+install -m 644 %{_sourcedir}/00-esp.conf.lhotse %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.lhotse
+install -m 644 %{_sourcedir}/50-root.conf.lhotse %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.lhotse
 install -m 644 %{_sourcedir}/00-esp.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.makalu
 install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.makalu
 
@@ -71,15 +71,18 @@ install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repa
 %files common
 %dir %{_prefix}/lib/repart.d
 
-%files standard
-%{_prefix}/lib/repart.d/00-esp.conf.standard
-%{_prefix}/lib/repart.d/50-root.conf.standard
+%files lhotse
+%{_prefix}/lib/repart.d/00-esp.conf.lhotse
+%{_prefix}/lib/repart.d/50-root.conf.lhotse
 
 %files makalu
 %{_prefix}/lib/repart.d/00-esp.conf.makalu
 %{_prefix}/lib/repart.d/50-root.conf.makalu
 
 %changelog
+* Tue Aug 04 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-4
+- Rename `standard` to `lhotse`.
+
 * Mon Aug 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-3
 - Include a Makalu subpackage.
 
