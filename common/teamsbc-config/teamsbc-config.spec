@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        3
+Release:        5
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -16,7 +16,8 @@ Source1:        00-esp.conf.lhotse
 Source2:        50-root.conf.lhotse
 
 Source3:        00-esp.conf.makalu
-Source4:        50-root.conf.makalu
+Source4:        30-usr.conf.makalu
+Source5:        50-root.conf.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -61,9 +62,12 @@ Configuration files specific to the Makalu TeamSBC variant.
 
 %install
 install -d %{buildroot}%{_prefix}/lib/repart.d
+
 install -m 644 %{_sourcedir}/00-esp.conf.lhotse %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.lhotse
 install -m 644 %{_sourcedir}/50-root.conf.lhotse %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.lhotse
+
 install -m 644 %{_sourcedir}/00-esp.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.makalu
+install -m 644 %{_sourcedir}/30-usr.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/30-usr.conf.makalu
 install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.makalu
 
 %check
@@ -77,9 +81,13 @@ install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repa
 
 %files makalu
 %{_prefix}/lib/repart.d/00-esp.conf.makalu
+%{_prefix}/lib/repart.d/30-usr.conf.makalu
 %{_prefix}/lib/repart.d/50-root.conf.makalu
 
 %changelog
+* Tue Aug 04 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-5
+- Rename `standard` to `lhotse`.
+
 * Tue Aug 04 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-4
 - Rename `standard` to `lhotse`.
 

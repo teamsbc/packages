@@ -1,0 +1,6 @@
+[Partition]
+Type=usr
+Format=ext4
+GrowFileSystem=on
+SizeMinBytes=2G
+SizeMaxBytes=2G
