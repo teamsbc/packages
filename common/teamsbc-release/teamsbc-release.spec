@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        23
+Release:        24
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -43,7 +43,6 @@ Requires: fedora-repos(%{version})
 Requires: teamsbc-repos-common
 
 Conflicts: fedora-release-common
-
 
 %description common
 Release files common to all TeamSBC variants
@@ -251,7 +250,19 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/install.conf.makalu
 %{_sysconfdir}/kernel/cmdline.makalu
 
+%post -n %{name}-makalu
+if [ -n "$IMAGE_ID" ]; then
+echo "IMAGE_ID=\"$IMAGE_ID\"" >> %{_prefix}/lib/os-release
+fi
+if [ -n "$IMAGE_VERSION" ]; then
+echo "IMAGE_VERSION=\"$IMAGE_VERSION\"" >> %{_prefix}/lib/os-release
+fi
+
 %changelog
+* Thu Aug 6 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-24
+- Support writing additional bits to os-release depending on
+  environment.
+
 * Tue Aug 4 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-23
 - Rename `standard` to `lhotse`.
 
