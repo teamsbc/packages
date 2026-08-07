@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        11
+Release:        12
 Summary:        TeamSBC package repositories
 
 License:        MIT
@@ -13,6 +13,7 @@ Requires:       system-release(%{version})
 BuildArch:      noarch
 
 Source1:        teamsbc-common.repo
+Source2:        RPM-GPG-KEY-teamsbc
 
 Requires:       teamsbc-repos-common = %{version}-%{release}
 
@@ -32,14 +33,20 @@ TeamSBC package repository files for yum and dnf.
 %install
 install -d -m 755 %{buildroot}%{_sysconfdir}/yum.repos.d
 install -m 644 %{_sourcedir}/teamsbc*repo %{buildroot}%{_sysconfdir}/yum.repos.d
+install -d -m 755 %{buildroot}%{_sysconfdir}/pki/rpm-gpg
+install -m 644 %{_sourcedir}/RPM-GPG-KEY-teamsbc %{buildroot}%{_sysconfdir}/pki/rpm-gpg/RPM-GPG-KEY-teamsbc
 
 %check
 
 %files common
 %dir /etc/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-common.repo
+/etc/pki/rpm-gpg/RPM-GPG-KEY-teamsbc
 
 %changelog
+* Fri Aug 07 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-12
+- Ship GPG public key for package signature verification.
+
 * Wed Jun 10 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-11
 - Set priority on teamsbc repositories.
 

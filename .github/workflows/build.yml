@@ -65,11 +65,20 @@ jobs:
           for DIR in ./${{ matrix.repository }}/*/; do
             pushd $DIR
             mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
-            cp -v *.* SOURCES
+            find . -maxdepth 1 -type f -exec cp -v {} SOURCES/ \;
             cp -v *.spec SPECS
             rpmbuild -ba *.spec
             popd
           done
+      - name: "Import GPG Key"
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          echo "${GPG_PRIVATE_KEY}" | gpg --batch --import
+          echo "%_gpg_name signing@teamsbc.org" >> ~/.rpmmacros
+      - name: "Sign"
+        run: |
+          find ./${{ matrix.repository }} -name '*.rpm' -exec rpmsign --addsign {} +
       - name: "Copy"
         run: |
           find ./${{ matrix.repository }} -name '*.rpm' -exec mv -t $LATEST {} +
@@ -88,4 +97,7 @@ jobs:
         run: |
           aws s3 cp --recursive /repo \
             "s3://teamsbc-packages/" \
+            --no-progress
+          aws s3 cp common/teamsbc-repos/RPM-GPG-KEY-teamsbc \
+            "s3://teamsbc-packages/RPM-GPG-KEY-teamsbc" \
             --no-progress
