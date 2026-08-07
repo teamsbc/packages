@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        12
+Release:        13
 Summary:        TeamSBC package repositories
 
 License:        MIT
@@ -44,6 +44,9 @@ install -m 644 %{_sourcedir}/RPM-GPG-KEY-teamsbc %{buildroot}%{_sysconfdir}/pki/
 /etc/pki/rpm-gpg/RPM-GPG-KEY-teamsbc
 
 %changelog
+* Fri Aug 07 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
+- Turn on GPG verification for common repository.
+
 * Fri Aug 07 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-12
 - Ship GPG public key for package signature verification.
 
