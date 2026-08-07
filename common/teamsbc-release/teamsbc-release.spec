@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        25
+Release:        26
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -118,6 +118,7 @@ RemovePathPostfixes: .makalu
 Provides:       teamsbc-release-identity = %{version}-%{release}
 Conflicts:      teamsbc-release-identity
 Requires(meta): teamsbc-release-makalu = %{version}-%{release}
+Requires(post): /bin/sh
 
 %description identity-makalu
 Provides the necessary files for a TeamSBC installation that is identifying
@@ -259,6 +260,9 @@ echo "IMAGE_VERSION=\"$IMAGE_VERSION\"" >> %{_prefix}/lib/os-release
 fi
 
 %changelog
+* Fri Aug 7 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-26
+- Require(post) /bin/sh to ensure ordering correctness.
+
 * Fri Aug 7 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-25
 - Move the post-write to identity since it's what owns the file.
 
