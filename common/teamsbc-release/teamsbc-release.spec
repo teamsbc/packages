@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        24
+Release:        25
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -250,7 +250,7 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/install.conf.makalu
 %{_sysconfdir}/kernel/cmdline.makalu
 
-%post -n %{name}-makalu
+%post -n %{name}-identity-makalu
 if [ -n "$IMAGE_ID" ]; then
 echo "IMAGE_ID=\"$IMAGE_ID\"" >> %{_prefix}/lib/os-release
 fi
@@ -259,6 +259,9 @@ echo "IMAGE_VERSION=\"$IMAGE_VERSION\"" >> %{_prefix}/lib/os-release
 fi
 
 %changelog
+* Fri Aug 7 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-25
+- Move the post-write to identity since it's what owns the file.
+
 * Thu Aug 6 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-24
 - Support writing additional bits to os-release depending on
   environment.
