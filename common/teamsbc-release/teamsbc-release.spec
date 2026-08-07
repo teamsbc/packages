@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        26
+Release:        27
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -118,7 +118,6 @@ RemovePathPostfixes: .makalu
 Provides:       teamsbc-release-identity = %{version}-%{release}
 Conflicts:      teamsbc-release-identity
 Requires(meta): teamsbc-release-makalu = %{version}-%{release}
-Requires(post): /bin/sh
 
 %description identity-makalu
 Provides the necessary files for a TeamSBC installation that is identifying
@@ -251,15 +250,28 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/install.conf.makalu
 %{_sysconfdir}/kernel/cmdline.makalu
 
-%post -n %{name}-identity-makalu
-if [ -n "$IMAGE_ID" ]; then
-echo "IMAGE_ID=\"$IMAGE_ID\"" >> %{_prefix}/lib/os-release
-fi
-if [ -n "$IMAGE_VERSION" ]; then
-echo "IMAGE_VERSION=\"$IMAGE_VERSION\"" >> %{_prefix}/lib/os-release
-fi
+%post -n %{name}-identity-makalu -p <lua>
+local image_id = os.getenv("IMAGE_ID")
+local image_version = os.getenv("IMAGE_VERSION")
+if image_id or image_version then
+    local path = rpm.expand("%{_prefix}") .. "/lib/os-release"
+    local f = io.open(path, "a")
+    if f then
+        if image_id then
+            f:write('IMAGE_ID="' .. image_id .. '"\n')
+        end
+        if image_version then
+            f:write('IMAGE_VERSION="' .. image_version .. '"\n')
+        end
+        f:close()
+    end
+end
 
 %changelog
+* Fri Aug 7 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-27
+- Convert identity-makalu %%post to Lua scriptlet to avoid /bin/sh
+  dependency ordering issues.
+
 * Fri Aug 7 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-26
 - Require(post) /bin/sh to ensure ordering correctness.
 
