@@ -17,19 +17,19 @@ jobs:
           - common
         build:
           - distro: fedora
-            version: 44
+            version: 45
             arch: x86_64
             runner: ubuntu-latest
           - distro: fedora
-            version: 44
+            version: 45
             arch: aarch64
             runner: ubuntu-24.04-arm
           - distro: fedora
-            version: 45
+            version: 46
             arch: x86_64
             runner: ubuntu-latest
           - distro: fedora
-            version: 45
+            version: 46
             arch: aarch64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.build.runner }}
