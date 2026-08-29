@@ -10,8 +10,6 @@ License:        MIT
 Provides:       teamsbc-config(%{version}) = %{release}
 Requires:       system-release(%{version})
 
-BuildArch:      noarch
-
 Source1:        00-esp.conf.lhotse
 Source2:        50-root.conf.lhotse
 
@@ -19,6 +17,7 @@ Source3:        00-esp.conf.makalu
 Source4:        30-usr.conf.makalu
 Source5:        31-usr.conf.makalu
 Source6:        50-root.conf.makalu
+Source7:        20-usr.transfer.makalu 
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -72,6 +71,12 @@ install -m 644 %{_sourcedir}/30-usr.conf.makalu %{buildroot}%{_prefix}/lib/repar
 install -m 644 %{_sourcedir}/31-usr.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/31-usr.conf.makalu
 install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.makalu
 
+install -d %{buildroot}%{_prefix}/lib/sysupdate.d
+install -m 644 %{_sourcedir}/20-usr.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
+       -e 's/@@BASEARCH@@/%{_arch}/g' \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+
 %check
 
 %files common
@@ -82,12 +87,19 @@ install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repa
 %{_prefix}/lib/repart.d/50-root.conf.lhotse
 
 %files makalu
+%dir %{_prefix}/lib/sysupdate.d
+
 %{_prefix}/lib/repart.d/00-esp.conf.makalu
 %{_prefix}/lib/repart.d/30-usr.conf.makalu
 %{_prefix}/lib/repart.d/31-usr.conf.makalu
 %{_prefix}/lib/repart.d/50-root.conf.makalu
 
+%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+
 %changelog
+* Sat Aug 29 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-7
+- Try out `sysupdate.d` configuration for `makalu`.
+
 * Tue Aug 04 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-6
 - Second `usr` partition for `makalu`.
 

@@ -1,0 +1,15 @@
+[Transfer]
+ProtectVersion=%A
+
+[Source]
+Type=url-file
+Path=https://updates.teamsbc.net/main/makalu-virt/@@DIST_VERSION@@/@@BASEARCH@@/makalu-virt/
+MatchPattern=@v.usr.raw.xz
+
+[Target]
+Type=partition
+Path=auto
+MatchPattern=usr-@v
+MatchPartitionType=usr
+PartitionFlags=0
+ReadOnly=1
