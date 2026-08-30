@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        6
+Release:        8
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -96,7 +96,27 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 
 %{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
 
+%post makalu -p <lua>
+local image_id = os.getenv("IMAGE_ID")
+if image_id then
+    local path = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/20-usr.transfer"
+    local f = io.open(path, "r")
+    if f then
+        local content = f:read("*a")
+        f:close()
+        content = content:gsub("@@IMAGE_ID@@", image_id)
+        f = io.open(path, "w")
+        if f then
+            f:write(content)
+            f:close()
+        end
+    end
+end
+
 %changelog
+* Sun Aug 30 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-8
+- Template IMAGE_ID in sysupdate transfer file via %post Lua scriptlet.
+
 * Sat Aug 29 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-7
 - Try out `sysupdate.d` configuration for `makalu`.
 

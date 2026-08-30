@@ -3,7 +3,7 @@ ProtectVersion=%A
 
 [Source]
 Type=url-file
-Path=https://updates.teamsbc.net/main/makalu-virt/@@DIST_VERSION@@/@@BASEARCH@@/makalu-virt/
+Path=https://updates.teamsbc.net/main/@@DIST_VERSION@@/@@BASEARCH@@/@@IMAGE_ID@@/
 MatchPattern=@v.usr.raw.xz
 
 [Target]
