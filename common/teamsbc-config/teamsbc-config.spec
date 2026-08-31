@@ -2,10 +2,11 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        8
+Release:        9
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
+BuildRequires:  gnupg2
 
 Provides:       teamsbc-config(%{version}) = %{release}
 Requires:       system-release(%{version})
@@ -17,7 +18,8 @@ Source3:        00-esp.conf.makalu
 Source4:        30-usr.conf.makalu
 Source5:        31-usr.conf.makalu
 Source6:        50-root.conf.makalu
-Source7:        20-usr.transfer.makalu 
+Source7:        20-usr.transfer.makalu
+Source8:        RPM-GPG-KEY-teamsbc
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -73,6 +75,9 @@ install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repa
 
 install -d %{buildroot}%{_prefix}/lib/sysupdate.d
 install -m 644 %{_sourcedir}/20-usr.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+
+install -d %{buildroot}%{_sysconfdir}/systemd
+gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_sysconfdir}/systemd/import-pubring.pgp
 sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        -e 's/@@BASEARCH@@/%{_arch}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
@@ -95,6 +100,7 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/repart.d/50-root.conf.makalu
 
 %{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+%{_sysconfdir}/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
@@ -114,6 +120,9 @@ if image_id then
 end
 
 %changelog
+* Mon Aug 31 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
+- Install TeamSBC signing key as sysupdate import keyring.
+
 * Sun Aug 30 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-8
 - Template IMAGE_ID in sysupdate transfer file via %post Lua scriptlet.
 
