@@ -5,7 +5,7 @@
 
 Name:     teamsbc-uboot
 Version:  2026.10
-Release:  2%{?candidate:.%{candidate}}%{?dist}
+Release:  3%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot firmware images for TeamSBC
 License:  GPL-2.0-or-later AND LicenseRef-Callaway-BSD AND LGPL-2.1-or-later AND LGPL-2.0-or-later
 URL:      https://u-boot-project.org/
@@ -14,6 +14,8 @@ ExclusiveArch: aarch64
 Source0:  https://git.u-boot-project.org/u-boot/u-boot/-/archive/v%{uboot_version}/u-boot-v%{uboot_version}.tar.bz2
 
 Patch0:   enable-bootmenu-by-default.patch
+Patch1:   disable-VBE-by-default.patch
+Patch2:   uefi-enable-SetVariableRT-with-volotile-storage.patch
 
 BuildRequires: bc
 BuildRequires: bison
@@ -83,6 +85,9 @@ done
 %{_datadir}/%{name}/rpi5/
 
 %changelog
+* Wed Sep 02 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-3.rc3
+- Import the disable VBE and SetVariableRT patches from Fedora.
+
 * Wed Sep 02 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-2.rc3
 - Import the enable menu patch from Fedora.
 
