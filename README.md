@@ -18,6 +18,12 @@ The `common` repository contains packages that are used by all TeamSBC variants.
 - `teamsbc-config`
 - `teamsbc-selinux`
 
+## Firmware
+
+The `firmware` repository contains firmware for various boards currently it contains the TeamSBC builds of u-boot which has subpackages per supported board.
+
+- `teamsbc-uboot`.
+
 ## Package Signing
 
 All RPMs are signed with the TeamSBC GPG key. The public key is shipped in the `teamsbc-repos` package and installed to `/etc/pki/rpm-gpg/RPM-GPG-KEY-teamsbc`.

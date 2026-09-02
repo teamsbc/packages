@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - common/**
+      - firmware/**
       - .github/workflows/build.yml
     branches:
       - main
@@ -15,6 +16,7 @@ jobs:
       matrix:
         repository:
           - common
+          - firmware
         build:
           - distro: fedora
             version: 45
@@ -55,17 +57,34 @@ jobs:
           BUILDREQS=""
           for DIR in ./${{ matrix.repository }}/*/; do
             pushd $DIR
+            EXCL_ARCH=$(rpmspec -q --srpm --qf '%{exclusivearch}' *.spec 2>/dev/null || true)
+            if [ -n "$EXCL_ARCH" ] && [ "$EXCL_ARCH" != "(none)" ] && [ "$EXCL_ARCH" != "$(uname -m)" ]; then
+              echo "Skipping $(basename $DIR): ExclusiveArch=$EXCL_ARCH, current arch=$(uname -m)"
+              popd
+              continue
+            fi
             BUILDREQS_ADD=$(rpmspec -q --srpm --buildrequires *.spec | xargs)
             BUILDREQS="${BUILDREQS_ADD} ${BUILDREQS}"
             popd
           done
-          dnf install -y $BUILDREQS
+          if [ -n "$BUILDREQS" ]; then
+            dnf install -y $BUILDREQS
+          fi
       - name: "Build"
         run: |
           for DIR in ./${{ matrix.repository }}/*/; do
             pushd $DIR
+            EXCL_ARCH=$(rpmspec -q --srpm --qf '%{exclusivearch}' *.spec 2>/dev/null || true)
+            if [ -n "$EXCL_ARCH" ] && [ "$EXCL_ARCH" != "(none)" ] && [ "$EXCL_ARCH" != "$(uname -m)" ]; then
+              echo "Skipping $(basename $DIR): ExclusiveArch=$EXCL_ARCH, current arch=$(uname -m)"
+              popd
+              continue
+            fi
             mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
             find . -maxdepth 1 -type f -exec cp -v {} SOURCES/ \;
+            for url in $(rpmspec -P *.spec | grep -oP '^Source\d*:\s+\Khttps?://\S+'); do
+              curl -fsSL -o "SOURCES/$(basename $url)" "$url"
+            done
             cp -v *.spec SPECS
             rpmbuild -ba *.spec
             popd
