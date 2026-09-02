@@ -5,13 +5,15 @@
 
 Name:     teamsbc-uboot
 Version:  2026.10
-Release:  0.1%{?candidate:.%{candidate}}%{?dist}
+Release:  2%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot firmware images for TeamSBC
 License:  GPL-2.0-or-later AND LicenseRef-Callaway-BSD AND LGPL-2.1-or-later AND LGPL-2.0-or-later
 URL:      https://u-boot-project.org/
 ExclusiveArch: aarch64
 
 Source0:  https://git.u-boot-project.org/u-boot/u-boot/-/archive/v%{uboot_version}/u-boot-v%{uboot_version}.tar.bz2
+
+Patch0:   enable-bootmenu-by-default.patch
 
 BuildRequires: bc
 BuildRequires: bison
@@ -56,7 +58,7 @@ BuildArch: noarch
 U-Boot firmware image for Raspberry Pi 5.
 
 %prep
-%autosetup -n u-boot-v%{uboot_version}
+%autosetup -p1 -n u-boot-v%{uboot_version}
 
 %build
 # Both RPi 4 and RPi 5 use the unified rpi_arm64 defconfig
@@ -81,5 +83,8 @@ done
 %{_datadir}/%{name}/rpi5/
 
 %changelog
+* Wed Sep 02 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-2.rc3
+- Import the enable menu patch from Fedora.
+
 * Wed Sep 02 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-0.1.rc3
 - Initial package from a clean upstream.
