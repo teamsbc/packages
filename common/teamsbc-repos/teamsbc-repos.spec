@@ -2,7 +2,7 @@
 
 Name:           teamsbc-repos
 Version:        %{dist_version}
-Release:        13
+Release:        14
 Summary:        TeamSBC package repositories
 
 License:        MIT
@@ -41,9 +41,13 @@ install -m 644 %{_sourcedir}/RPM-GPG-KEY-teamsbc %{buildroot}%{_sysconfdir}/pki/
 %files common
 %dir /etc/yum.repos.d
 %config(noreplace) /etc/yum.repos.d/teamsbc-common.repo
+%config(noreplace) /etc/yum.repos.d/teamsbc-firmware.repo
 /etc/pki/rpm-gpg/RPM-GPG-KEY-teamsbc
 
 %changelog
+* Thu Sep 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-14
+- Include firmware repositories.
+
 * Fri Aug 07 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
 - Turn on GPG verification for common repository.
 
