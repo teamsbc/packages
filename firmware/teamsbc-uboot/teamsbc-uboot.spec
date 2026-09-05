@@ -5,7 +5,7 @@
 
 Name:     teamsbc-uboot
 Version:  2026.10
-Release:  4%{?candidate:.%{candidate}}%{?dist}
+Release:  5%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot firmware images for TeamSBC
 License:  GPL-2.0-or-later AND LicenseRef-Callaway-BSD AND LGPL-2.1-or-later AND LGPL-2.0-or-later
 URL:      https://u-boot-project.org/
@@ -110,6 +110,9 @@ install -pDm 0644 letstrust-tpm-spi-gpio.dtbo \
 %{_datadir}/%{name}/rpi5/
 
 %changelog
+* Sat Sep 05 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-5.rc3
+- Enable SPI parent config for letstrust TPM build.
+
 * Thu Sep 03 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-4.rc3
 - Enable TPM2 measured boot (EFI TCG2) via Kconfig fragment.
 - Add LetsTrust TPM SPI GPIO overlay subpackage for RPi 4.
