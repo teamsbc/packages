@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        9
+Release:        10
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -53,6 +53,9 @@ RemovePathPostfixes: .makalu
 Provides:  teamsbc-config = %{version}-%{release}
 Conflicts: teamsbc-config
 
+Provides:  systemd-import-keys
+Conflicts: systemd-import-keys
+
 Requires: teamsbc-config-common
 
 %description makalu
@@ -76,8 +79,8 @@ install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repa
 install -d %{buildroot}%{_prefix}/lib/sysupdate.d
 install -m 644 %{_sourcedir}/20-usr.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
 
-install -d %{buildroot}%{_sysconfdir}/systemd
-gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_sysconfdir}/systemd/import-pubring.pgp
+install -d %{buildroot}%{_prefix}/lib/systemd
+gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
 sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        -e 's/@@BASEARCH@@/%{_arch}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
@@ -100,7 +103,7 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/repart.d/50-root.conf.makalu
 
 %{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
-%{_sysconfdir}/systemd/import-pubring.pgp
+%{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
@@ -120,6 +123,10 @@ if image_id then
 end
 
 %changelog
+* Fri Sep 25 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-10
+- Ship signing key in /usr/lib/systemd instead of /etc/systemd now that
+  systemd-container splits import-pubring into systemd-import-keys.
+
 * Mon Aug 31 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
 - Install TeamSBC signing key as sysupdate import keyring.
 
