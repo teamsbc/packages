@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        28
+Release:        29
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -252,6 +252,17 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/kernel/install.conf.makalu
 %{_sysconfdir}/kernel/cmdline.makalu
 
+%post -n %{name}-identity-lhotse -p <lua>
+local image_id = os.getenv("IMAGE_ID")
+if image_id then
+    local path = rpm.expand("%{_prefix}") .. "/lib/os-release"
+    local f = io.open(path, "a")
+    if f then
+        f:write('IMAGE_ID="' .. image_id .. '"\n')
+        f:close()
+    end
+end
+
 %post -n %{name}-identity-makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 local image_version = os.getenv("IMAGE_VERSION")
@@ -270,6 +281,11 @@ if image_id or image_version then
 end
 
 %changelog
+* Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-29
+- Also write `IMAGE_ID` for the Lhotse variant. We tend to only set the
+  `IMAGE_ID` here and that does get used by the entry names. `IMAGE_VERSION`
+  does not make sense in this context.
+
 * Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-28
 - Configure boot entry names using the kernel version for Lhotse and the
   image version for Makalu, including the entry token, image ID, and architecture.
