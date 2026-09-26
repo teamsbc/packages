@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        10
+Release:        11
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -123,6 +123,9 @@ if image_id then
 end
 
 %changelog
+* Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-11
+- Match update payload filenames prefixed with IMAGE_ID.
+
 * Fri Sep 25 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-10
 - Ship signing key in /usr/lib/systemd instead of /etc/systemd now that
   systemd-container splits import-pubring into systemd-import-keys.

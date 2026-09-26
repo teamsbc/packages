@@ -4,7 +4,7 @@ ProtectVersion=%A
 [Source]
 Type=url-file
 Path=https://updates.teamsbc.net/main/@@DIST_VERSION@@/@@BASEARCH@@/@@IMAGE_ID@@/
-MatchPattern=@v.usr.raw.xz
+MatchPattern=@@IMAGE_ID@@-@v.usr.raw.xz
 
 [Target]
 Type=partition
