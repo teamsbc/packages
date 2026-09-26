@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        27
+Release:        28
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -143,9 +143,11 @@ echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
+echo "entry_name_format=%%e-%%M_%%v_%%a" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
 echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.lhotse
 
 echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
+echo "entry_name_format=%%e-%%M_%%A_%%a" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "initrd_generator=dracut" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "uki_generator=ukify" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
@@ -268,6 +270,10 @@ if image_id or image_version then
 end
 
 %changelog
+* Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-28
+- Configure boot entry names using the kernel version for Lhotse and the
+  image version for Makalu, including the entry token, image ID, and architecture.
+
 * Fri Aug 7 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-27
 - Convert identity-makalu %%post to Lua scriptlet to avoid /bin/sh
   dependency ordering issues.
