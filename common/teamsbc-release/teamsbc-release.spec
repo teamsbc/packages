@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        29
+Release:        30
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -143,11 +143,11 @@ echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
-echo "entry_name_format=%%e-%%M_%%v_%%a" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
+echo "entry_name_format=%%v" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
 echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.lhotse
 
 echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
-echo "entry_name_format=%%e-%%M_%%A_%%a" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
+echo "entry_name_format=%%A" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "initrd_generator=dracut" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "uki_generator=ukify" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
 echo "mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
@@ -281,6 +281,11 @@ if image_id or image_version then
 end
 
 %changelog
+* Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-30
+- Simplify the `entry_name_format` to just the relevant version, we'll be
+  setting the `entry_token` itself in the future to keep various things
+  apart.
+
 * Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-29
 - Also write `IMAGE_ID` for the Lhotse variant. We tend to only set the
   `IMAGE_ID` here and that does get used by the entry names. `IMAGE_VERSION`
