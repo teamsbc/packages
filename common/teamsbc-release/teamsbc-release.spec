@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        30
+Release:        31
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -138,19 +138,20 @@ ln -s ../usr/lib/system-release-cpe %{buildroot}%{_sysconfdir}/system-release-cp
 ln -s fedora-release %{buildroot}%{_sysconfdir}/redhat-release
 ln -s fedora-release %{buildroot}%{_sysconfdir}/system-release
 
+install -d %{buildroot}%{_prefix}/lib/kernel
 install -d %{buildroot}%{_sysconfdir}/kernel
-echo "teamsbc" > %{buildroot}%{_sysconfdir}/kernel/entry-token
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
-echo "layout=bls" > %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
-echo "entry_name_format=%%v" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.lhotse
-echo "" > %{buildroot}%{_sysconfdir}/kernel/cmdline.lhotse
+install -d %{buildroot}%{_prefix}/lib/kernel/install.conf.d
+echo "layout=bls" > %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
+echo "entry_name_format=%%M_%%v" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
+echo "" > %{buildroot}%{_prefix}/lib/kernel/cmdline.lhotse
 
-echo "layout=uki" > %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
-echo "entry_name_format=%%A" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
-echo "initrd_generator=dracut" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
-echo "uki_generator=ukify" >> %{buildroot}%{_sysconfdir}/kernel/install.conf.makalu
-echo "mount.usr=dissect" > %{buildroot}%{_sysconfdir}/kernel/cmdline.makalu
+echo "layout=uki" > %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
+echo "entry_name_format=%%M_%%A" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
+echo "initrd_generator=dracut" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
+echo "uki_generator=ukify" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
+echo "mount.usr=dissect" > %{buildroot}%{_prefix}/lib/kernel/cmdline.makalu
 
 # /etc/os-release
 cat <<EOF >os-release
@@ -206,8 +207,8 @@ cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
 %%fc%{dist_version}     1
 EOF
 
-install -d -m 755 %{buildroot}%{_sysconfdir}/dnf/libdnf5.conf.d
-cat >> %{buildroot}%{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf << EOF
+install -d -m 755 %{buildroot}%{_datadir}/dnf5/libdnf.conf.d
+cat >> %{buildroot}%{_datadir}/dnf5/libdnf.conf.d/20-exclude-bcm283x.conf << EOF
 [main]
 exclude=bcm283x-firmware
 EOF
@@ -224,8 +225,10 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_sysconfdir}/redhat-release
 %{_sysconfdir}/system-release
 %{_sysconfdir}/system-release-cpe
-%{_sysconfdir}/kernel/entry-token
+%dir %{_prefix}/lib/kernel
+%dir %{_prefix}/lib/kernel/install.conf.d
 %{_sysconfdir}/kernel/tries
+%ghost %{_prefix}/lib/kernel/entry-token
 %attr(0644,root,root) %{_prefix}/lib/issue
 %config(noreplace) %{_sysconfdir}/issue
 %attr(0644,root,root) %{_prefix}/lib/issue.net
@@ -242,15 +245,27 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %files lhotse
 %files identity-lhotse
 %{_prefix}/lib/os-release.lhotse
-%{_sysconfdir}/kernel/install.conf.lhotse
-%{_sysconfdir}/kernel/cmdline.lhotse
-%{_sysconfdir}/dnf/libdnf5.conf.d/20-exclude-bcm283x.conf
+%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
+%{_prefix}/lib/kernel/cmdline.lhotse
+%{_datadir}/dnf5/libdnf.conf.d/20-exclude-bcm283x.conf
 
 %files makalu
 %files identity-makalu
 %{_prefix}/lib/os-release.makalu
-%{_sysconfdir}/kernel/install.conf.makalu
-%{_sysconfdir}/kernel/cmdline.makalu
+%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
+%{_prefix}/lib/kernel/cmdline.makalu
+
+%post common -p <lua>
+local image_id = os.getenv("IMAGE_ID")
+if not image_id or image_id == "" then
+    image_id = "teamsbc"
+end
+local path = rpm.expand("%{_prefix}") .. "/lib/kernel/entry-token"
+local f = io.open(path, "w")
+if f then
+    f:write(image_id .. "\n")
+    f:close()
+end
 
 %post -n %{name}-identity-lhotse -p <lua>
 local image_id = os.getenv("IMAGE_ID")
@@ -281,6 +296,15 @@ if image_id or image_version then
 end
 
 %changelog
+* Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-31
+- Move kernel config (entry-token, tries, install.conf, cmdline) from
+  /etc/kernel to /usr/lib/kernel and DNF vendor config to
+  /usr/share/dnf5/libdnf.conf.d so we no longer ship files in /etc
+  beyond the conventional symlinks. entry-token is now written
+  dynamically in %%post using IMAGE_ID (falling back to "teamsbc").
+  Include IMAGE_ID in both entry_name_formats (%%M_%%v for Lhotse,
+  %%M_%%A for Makalu).
+
 * Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-30
 - Simplify the `entry_name_format` to just the relevant version, we'll be
   setting the `entry_token` itself in the future to keep various things
