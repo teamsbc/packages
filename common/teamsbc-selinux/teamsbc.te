@@ -9,3 +9,15 @@ require {
 }
 
 allow init_t dosfs_t:file rename;
+
+# Allow systemd-importd (and systemd-pull, which runs in the same domain) to
+# read the OpenPGP keyring used for verifying sysupdate manifests.
+type systemd_import_pubring_t;
+files_type(systemd_import_pubring_t)
+
+require {
+	type systemd_importd_t;
+	class file { getattr open read };
+}
+
+allow systemd_importd_t systemd_import_pubring_t:file { getattr open read };

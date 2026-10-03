@@ -1,0 +1,1 @@
+/usr/lib/systemd/import-pubring\.pgp	--	gen_context(system_u:object_r:systemd_import_pubring_t,s0)

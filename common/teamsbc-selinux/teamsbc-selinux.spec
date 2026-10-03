@@ -5,7 +5,7 @@
 
 Name:           teamsbc-selinux
 Version:        %{dist_version}
-Release:        1
+Release:        2
 Summary:        TeamSBC SELinux policies 
 
 License:        MIT
@@ -60,5 +60,8 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-2
+- Allow systemd-sysupdate to read its keyring file in /usr.
+
 * Wed Jun 17 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-1
-- Set priority on teamsbc repositories.
+- Allow systemd-bless-boot to move files around in the ESP.
