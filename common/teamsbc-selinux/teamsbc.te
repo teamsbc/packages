@@ -5,10 +5,10 @@ policy_module(teamsbc,1.0)
 require {
 	type dosfs_t;
 	type init_t;
-	class file rename;
+	class file { getattr open read rename unlink };
 }
 
-allow init_t dosfs_t:file rename;
+allow init_t dosfs_t:file { getattr open read rename unlink };
 
 # Allow systemd-importd (and systemd-pull, which runs in the same domain) to
 # read the OpenPGP keyring used for verifying sysupdate manifests.

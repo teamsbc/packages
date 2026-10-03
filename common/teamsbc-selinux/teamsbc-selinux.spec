@@ -5,7 +5,7 @@
 
 Name:           teamsbc-selinux
 Version:        %{dist_version}
-Release:        6
+Release:        7
 Summary:        TeamSBC SELinux policies 
 
 License:        MIT
@@ -60,6 +60,9 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-7
+- More fixes for sysupdate.
+
 * Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-6
 - More systemd-importd fixes for block devices.
 
