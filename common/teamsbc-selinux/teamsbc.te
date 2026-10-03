@@ -47,5 +47,14 @@ require {
 
 allow systemd_importd_t proc_net_t:lnk_file read;
 allow systemd_importd_t sysctl_net_t:dir search;
-allow systemd_importd_t sysctl_net_t:file { open read };
+allow systemd_importd_t sysctl_net_t:file { getattr open read };
 allow systemd_importd_t tmpfs_t:file { read write };
+
+# Allow systemd-sysupdate (running as systemd_importd_t) to access block
+# devices for partition-based updates.
+require {
+	type fixed_disk_device_t;
+	class blk_file { getattr open read write };
+}
+
+allow systemd_importd_t fixed_disk_device_t:blk_file { getattr open read write };
