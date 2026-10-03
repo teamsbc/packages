@@ -5,7 +5,7 @@
 
 Name:           teamsbc-selinux
 Version:        %{dist_version}
-Release:        3
+Release:        4
 Summary:        TeamSBC SELinux policies 
 
 License:        MIT
@@ -60,6 +60,10 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-4
+- Allow systemd-importd to read dosfs_t as well, allow it access to /proc/net
+  for cURL, and allow it access to memfds.
+
 * Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-3
 - Allow systemd-importd to write to the dosfs_t so it can update UKIs.
 
