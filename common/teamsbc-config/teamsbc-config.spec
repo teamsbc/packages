@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        11
+Release:        12
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -20,6 +20,7 @@ Source5:        31-usr.conf.makalu
 Source6:        50-root.conf.makalu
 Source7:        20-usr.transfer.makalu
 Source8:        RPM-GPG-KEY-teamsbc
+Source9:        10-uki.transfer.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -77,12 +78,14 @@ install -m 644 %{_sourcedir}/31-usr.conf.makalu %{buildroot}%{_prefix}/lib/repar
 install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.makalu
 
 install -d %{buildroot}%{_prefix}/lib/sysupdate.d
+install -m 644 %{_sourcedir}/10-uki.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/10-uki.transfer.makalu
 install -m 644 %{_sourcedir}/20-usr.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
 sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        -e 's/@@BASEARCH@@/%{_arch}/g' \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/10-uki.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
 
 %check
@@ -102,27 +105,35 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/repart.d/31-usr.conf.makalu
 %{_prefix}/lib/repart.d/50-root.conf.makalu
 
+%{_prefix}/lib/sysupdate.d/10-uki.transfer.makalu
 %{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
-    local path = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/20-usr.transfer"
-    local f = io.open(path, "r")
-    if f then
-        local content = f:read("*a")
-        f:close()
-        content = content:gsub("@@IMAGE_ID@@", image_id)
-        f = io.open(path, "w")
+    local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
+    local transfers = {"10-uki.transfer", "20-usr.transfer"}
+    for _, name in ipairs(transfers) do
+        local path = sysupdate_dir .. name
+        local f = io.open(path, "r")
         if f then
-            f:write(content)
+            local content = f:read("*a")
             f:close()
+            content = content:gsub("@@IMAGE_ID@@", image_id)
+            f = io.open(path, "w")
+            if f then
+                f:write(content)
+                f:close()
+            end
         end
     end
 end
 
 %changelog
+* Sat Oct 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-12
+- Ship sysupdate transfer for the UKI alongside the usr partition.
+
 * Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-11
 - Match update payload filenames prefixed with IMAGE_ID.
 

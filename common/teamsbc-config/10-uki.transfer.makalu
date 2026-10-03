@@ -1,0 +1,18 @@
+[Transfer]
+ProtectVersion=%A
+
+[Source]
+Type=url-file
+Path=https://updates.teamsbc.net/main/@@DIST_VERSION@@/@@BASEARCH@@/@@IMAGE_ID@@/
+MatchPattern=@@IMAGE_ID@@-@v.efi
+
+[Target]
+Type=regular-file
+Path=/EFI/Linux
+PathRelativeTo=esp
+MatchPattern=@@IMAGE_ID@@_@v+@l-@d.efi \
+             @@IMAGE_ID@@_@v+@l.efi \
+             @@IMAGE_ID@@_@v.efi
+TriesLeft=3
+TriesDone=0
+InstancesMax=2
