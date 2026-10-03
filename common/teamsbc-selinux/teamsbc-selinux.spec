@@ -5,7 +5,7 @@
 
 Name:           teamsbc-selinux
 Version:        %{dist_version}
-Release:        2
+Release:        3
 Summary:        TeamSBC SELinux policies 
 
 License:        MIT
@@ -60,6 +60,9 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-3
+- Allow systemd-importd to write to the dosfs_t so it can update UKIs.
+
 * Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-2
 - Allow systemd-sysupdate to read its keyring file in /usr.
 

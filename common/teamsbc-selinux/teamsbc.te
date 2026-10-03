@@ -21,3 +21,14 @@ require {
 }
 
 allow systemd_importd_t systemd_import_pubring_t:file { getattr open read };
+
+# Allow systemd-importd (systemd-pull) to write update artifacts to the ESP,
+# which is a VFAT partition labeled dosfs_t.
+require {
+	type dosfs_t;
+	class dir { search write add_name remove_name };
+	class file { create getattr setattr open read write rename unlink lock };
+}
+
+allow systemd_importd_t dosfs_t:dir { search write add_name remove_name };
+allow systemd_importd_t dosfs_t:file { create getattr setattr open read write rename unlink lock };
