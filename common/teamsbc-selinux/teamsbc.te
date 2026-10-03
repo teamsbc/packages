@@ -33,14 +33,19 @@ require {
 allow systemd_importd_t dosfs_t:dir { search read write add_name remove_name };
 allow systemd_importd_t dosfs_t:file { create getattr setattr open read write rename unlink lock };
 
-# Allow systemd-pull to read /proc/net (libcurl needs this for networking)
-# and to read/write the memfd used by sysupdated for capturing worker output.
+# Allow systemd-pull to access /proc/net and /proc/sys/net (libcurl needs
+# these for networking, e.g. checking IPv6 availability) and to read/write
+# the memfd used by sysupdated for capturing worker output.
 require {
 	type proc_net_t;
+	type sysctl_net_t;
 	type tmpfs_t;
 	class lnk_file read;
-	class file { read write };
+	class dir search;
+	class file { open read write };
 }
 
 allow systemd_importd_t proc_net_t:lnk_file read;
+allow systemd_importd_t sysctl_net_t:dir search;
+allow systemd_importd_t sysctl_net_t:file { open read };
 allow systemd_importd_t tmpfs_t:file { read write };

@@ -5,7 +5,7 @@
 
 Name:           teamsbc-selinux
 Version:        %{dist_version}
-Release:        4
+Release:        5
 Summary:        TeamSBC SELinux policies 
 
 License:        MIT
@@ -60,6 +60,9 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-5
+- More systemd-importd fixes for cURL.
+
 * Sat Oct 3 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-4
 - Allow systemd-importd to read dosfs_t as well, allow it access to /proc/net
   for cURL, and allow it access to memfds.
