@@ -1,4 +1,4 @@
-name: Build SRPMs
+name: Build RPMs and repositories
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - main
   workflow_dispatch:
 
-# ensure jobs don't run concurrently
+# Keep publication, cleanup, and indexing within one serialized pipeline.
 concurrency:
   group: packages-${{ github.ref }}
   cancel-in-progress: false
@@ -188,3 +188,53 @@ jobs:
             --metadata-directive COPY --no-progress
           aws s3 cp common/teamsbc-repos/RPM-GPG-KEY-teamsbc \
             "s3://teamsbc-packages/RPM-GPG-KEY-teamsbc" --no-progress
+
+  cleanup:
+    name: Cleanup Dated Builds
+    needs: snapshot
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      BRANCH: ${{ github.ref_name }}
+    steps:
+      - name: "Keep only the 5 most recent dated builds"
+        run: |
+          aws s3 ls "s3://teamsbc-packages/$BRANCH/" \
+            | awk '$1 == "PRE" && $2 ~ /^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\/$/ { sub(/\/$/, "", $2); print $2 }' \
+            | sort -ru \
+            | tail -n +6 \
+            | while IFS= read -r DATE; do
+                echo "Removing $BRANCH/$DATE/"
+                aws s3 rm --recursive "s3://teamsbc-packages/$BRANCH/$DATE/"
+              done
+
+  generate-index:
+    name: Generate Indexes
+    needs: cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: "Create"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          go run github.com/teamsbc/s3-directory-listing/cmd/s3-directory-listing@latest create \
+            teamsbc-packages \
+            s3-index-template/default.html \
+            -o /tmp/output
+      - name: "Upload"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          aws s3 cp --recursive /tmp/output \
+            "s3://teamsbc-packages/" \
+            --no-progress
