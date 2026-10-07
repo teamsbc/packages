@@ -6,13 +6,24 @@ on:
       - common/**
       - firmware/**
       - .github/workflows/build.yml
+      - .github/scripts/**
     branches:
       - main
   workflow_dispatch:
 
+# ensure jobs don't run concurrently
+concurrency:
+  group: packages-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build-rpms:
     strategy:
+      fail-fast: false
       matrix:
         repository:
           - common
@@ -27,88 +38,152 @@ jobs:
             arch: aarch64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.build.runner }}
-    container: 
+    container:
       image: ghcr.io/teamsbc/ci-packages:${{ matrix.build.distro }}-${{ matrix.build.version }}
+    env:
+      REPO_URI: s3://teamsbc-packages/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
+      REPOSITORY: ${{ matrix.repository }}
     steps:
       - name: "Checkout Code"
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: "Setup"
-        env:
-          LATEST: /repo/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
         run: |
           echo "%_topdir %(pwd)" >> ~/.rpmmacros
-          mkdir /rpms/
-          mkdir /repo/
-          DATED=/repo/${{ github.ref_name }}/$(date +%Y.%m.%d)/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
-          mkdir -p $LATEST
-          mkdir -p $DATED
-          echo "LATEST=$LATEST" >> $GITHUB_ENV
-          echo "DATED=$DATED" >> $GITHUB_ENV
+          {
+            echo "OLD=$RUNNER_TEMP/old-repository"
+            echo "NEW=$RUNNER_TEMP/new-rpms"
+            echo "MERGED=$RUNNER_TEMP/merged-repository"
+            echo "PACKAGES=$RUNNER_TEMP/packages.txt"
+          } >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/new-rpms"
+      - name: "Fetch published metadata"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+        run: |
+          python3 .github/scripts/package_repository.py fetch "$REPO_URI" "$OLD"
+      - name: "Select packages"
+        id: select
+        env:
+          FORCE_REBUILD: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          OPTIONS=()
+          if [ "$FORCE_REBUILD" = true ]; then
+            OPTIONS+=(--force)
+          fi
+          python3 .github/scripts/package_repository.py select \
+            "$REPOSITORY" "$OLD/repodata/repomd.xml" "${OPTIONS[@]}" \
+            > "$RUNNER_TEMP/candidates.txt"
+          : > "$PACKAGES"
+          while IFS= read -r DIR; do
+            pushd "$DIR"
+            EXCL_ARCH=$(rpmspec -q --srpm --qf '%{exclusivearch}' ./*.spec)
+            popd
+            if [ -n "$EXCL_ARCH" ] && [ "$EXCL_ARCH" != "(none)" ]; then
+              case " $EXCL_ARCH " in
+                *" $(uname -m) "*) ;;
+                *) echo "Skipping $DIR: ExclusiveArch=$EXCL_ARCH"; continue ;;
+              esac
+            fi
+            echo "$DIR" >> "$PACKAGES"
+          done < "$RUNNER_TEMP/candidates.txt"
+          if [ -s "$PACKAGES" ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            cat "$PACKAGES"
+          else
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            echo "No packages to rebuild."
+          fi
       - name: "Build Requirements"
+        if: steps.select.outputs.build == 'true'
         run: |
           BUILDREQS=""
-          for DIR in ./${{ matrix.repository }}/*/; do
-            pushd $DIR
-            EXCL_ARCH=$(rpmspec -q --srpm --qf '%{exclusivearch}' *.spec 2>/dev/null || true)
-            if [ -n "$EXCL_ARCH" ] && [ "$EXCL_ARCH" != "(none)" ] && [ "$EXCL_ARCH" != "$(uname -m)" ]; then
-              echo "Skipping $(basename $DIR): ExclusiveArch=$EXCL_ARCH, current arch=$(uname -m)"
-              popd
-              continue
-            fi
-            BUILDREQS_ADD=$(rpmspec -q --srpm --buildrequires *.spec | xargs)
+          while IFS= read -r DIR; do
+            pushd "$DIR"
+            BUILDREQS_ADD=$(rpmspec -q --srpm --buildrequires ./*.spec | xargs)
             BUILDREQS="${BUILDREQS_ADD} ${BUILDREQS}"
             popd
-          done
+          done < "$PACKAGES"
           if [ -n "$BUILDREQS" ]; then
             dnf install -y $BUILDREQS
           fi
       - name: "Build"
+        if: steps.select.outputs.build == 'true'
         run: |
-          for DIR in ./${{ matrix.repository }}/*/; do
-            pushd $DIR
-            EXCL_ARCH=$(rpmspec -q --srpm --qf '%{exclusivearch}' *.spec 2>/dev/null || true)
-            if [ -n "$EXCL_ARCH" ] && [ "$EXCL_ARCH" != "(none)" ] && [ "$EXCL_ARCH" != "$(uname -m)" ]; then
-              echo "Skipping $(basename $DIR): ExclusiveArch=$EXCL_ARCH, current arch=$(uname -m)"
-              popd
-              continue
-            fi
+          while IFS= read -r DIR; do
+            pushd "$DIR"
             mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
             find . -maxdepth 1 -type f -exec cp -v {} SOURCES/ \;
-            for url in $(rpmspec -P *.spec | grep -oP '^Source\d*:\s+\Khttps?://\S+'); do
+            for url in $(rpmspec -P ./*.spec | grep -oP '^Source\d*:\s+\Khttps?://\S+'); do
               curl -fsSL -o "SOURCES/$(basename $url)" "$url"
             done
-            cp -v *.spec SPECS
-            rpmbuild -ba *.spec
+            cp -v ./*.spec SPECS
+            rpmbuild -ba ./*.spec
             popd
-          done
+          done < "$PACKAGES"
       - name: "Import GPG Key"
+        if: steps.select.outputs.build == 'true'
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
           echo "${GPG_PRIVATE_KEY}" | gpg --batch --import
           echo "%_gpg_name signing@teamsbc.org" >> ~/.rpmmacros
       - name: "Sign"
+        if: steps.select.outputs.build == 'true'
         run: |
-          find ./${{ matrix.repository }} -name '*.rpm' -exec rpmsign --addsign {} +
+          find "./$REPOSITORY" -name '*.rpm' -exec rpmsign --addsign {} +
       - name: "Copy"
+        if: steps.select.outputs.build == 'true'
         run: |
-          find ./${{ matrix.repository }} -name '*.rpm' -exec mv -t $LATEST {} +
-      - name: "Repository"
+          find "./$REPOSITORY" -name '*.rpm' -exec mv -t "$NEW" {} +
+      - name: "Merge repository metadata"
+        if: steps.select.outputs.build == 'true'
         run: |
-          cd $LATEST/
-          createrepo_c .
-      - name: "Copy to dated directory"
-        run: |
-          sudo cp -vra $LATEST/* $DATED/
+          python3 .github/scripts/package_repository.py merge \
+            "$NEW" "$OLD" "$MERGED" "$GITHUB_SHA"
       - name: "Upload"
+        if: steps.select.outputs.build == 'true'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
         run: |
-          aws s3 cp --recursive /repo \
-            "s3://teamsbc-packages/" \
+          aws s3 cp --recursive "$NEW/" "$REPO_URI/" \
+            --exclude "*" --include "*.rpm" \
             --no-progress
+          aws s3 cp --recursive "$MERGED/repodata/" "$REPO_URI/repodata/" \
+            --exclude "repomd.xml" \
+            --no-progress
+          # Publish the manifest (and the source commit baseline) last.
+          aws s3 cp "$MERGED/repodata/repomd.xml" \
+            "$REPO_URI/repodata/repomd.xml" --no-progress
+
+  snapshot:
+    needs: build-rpms
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/teamsbc/ci-packages:fedora-46
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v6
+      - name: "Copy complete repository snapshot within R2"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          LATEST="s3://teamsbc-packages/$BRANCH/latest/"
+          DATED="s3://teamsbc-packages/$BRANCH/$(date -u +%Y.%m.%d)/"
+          # Preserve object metadata without using R2's unsupported tagging APIs.
+          aws s3 cp --recursive "$LATEST" "$DATED" \
+            --exclude "*.html" --exclude "*/repomd.xml" \
+            --copy-props metadata-directive --no-progress
+          aws s3 cp --recursive "$LATEST" "$DATED" \
+            --exclude "*" --include "*/repomd.xml" \
+            --copy-props metadata-directive --no-progress
           aws s3 cp common/teamsbc-repos/RPM-GPG-KEY-teamsbc \
-            "s3://teamsbc-packages/RPM-GPG-KEY-teamsbc" \
-            --no-progress
+            "s3://teamsbc-packages/RPM-GPG-KEY-teamsbc" --no-progress
