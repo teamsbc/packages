@@ -178,12 +178,13 @@ jobs:
         run: |
           LATEST="s3://teamsbc-packages/$BRANCH/latest/"
           DATED="s3://teamsbc-packages/$BRANCH/$(date -u +%Y.%m.%d)/"
-          # Preserve object metadata without using R2's unsupported tagging APIs.
+          # Explicit COPY bypasses copy-props, which injects a tagging directive
+          # even when tags are excluded. R2 does not support that header.
           aws s3 cp --recursive "$LATEST" "$DATED" \
             --exclude "*.html" --exclude "*/repomd.xml" \
-            --copy-props metadata-directive --no-progress
+            --metadata-directive COPY --no-progress
           aws s3 cp --recursive "$LATEST" "$DATED" \
             --exclude "*" --include "*/repomd.xml" \
-            --copy-props metadata-directive --no-progress
+            --metadata-directive COPY --no-progress
           aws s3 cp common/teamsbc-repos/RPM-GPG-KEY-teamsbc \
             "s3://teamsbc-packages/RPM-GPG-KEY-teamsbc" --no-progress
