@@ -22,6 +22,7 @@ defaults:
 
 jobs:
   build-rpms:
+    name: Build RPMs
     strategy:
       fail-fast: false
       matrix:
@@ -44,6 +45,11 @@ jobs:
       REPO_URI: s3://teamsbc-packages/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
       REPOSITORY: ${{ matrix.repository }}
     steps:
+      - name: "Install Git"
+        run: |
+          if ! command -v git >/dev/null 2>&1; then
+            dnf install -y git-core
+          fi
       - name: "Checkout Code"
         uses: actions/checkout@v6
         with:
@@ -162,6 +168,7 @@ jobs:
             "$REPO_URI/repodata/repomd.xml" --no-progress
 
   snapshot:
+    name: Create Snapshot
     needs: build-rpms
     runs-on: ubuntu-latest
     container:
@@ -190,7 +197,7 @@ jobs:
             "s3://teamsbc-packages/RPM-GPG-KEY-teamsbc" --no-progress
 
   cleanup:
-    name: Cleanup Dated Builds
+    name: Cleanup Snapshots
     needs: snapshot
     runs-on: ubuntu-latest
     env:
