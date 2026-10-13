@@ -1,11 +1,11 @@
-%global candidate rc3
+#global candidate rc3
 %global uboot_version %{version}%{?candidate:-%{candidate}}
 # No ELF binaries, only firmware blobs; disable empty debuginfo/debugsource packages
 %global debug_package %{nil}
 
 Name:     teamsbc-uboot
 Version:  2026.10
-Release:  6%{?candidate:.%{candidate}}%{?dist}
+Release:  7%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot firmware images for TeamSBC
 License:  GPL-2.0-or-later AND LicenseRef-Callaway-BSD AND LGPL-2.1-or-later AND LGPL-2.0-or-later
 URL:      https://u-boot-project.org/
@@ -14,8 +14,8 @@ ExclusiveArch: aarch64
 Source0:  https://git.u-boot-project.org/u-boot/u-boot/-/archive/v%{uboot_version}/u-boot-v%{uboot_version}.tar.bz2
 Source1:  rpi4-tpm-measured-boot.config
 Source2:  rpi4-tpm-spi-gpio.dts
-# https://github.com/rockchip-linux/rkbin/blob/master/bin/rk35/rk3566_ddr_1056MHz_v1.23.bin
-Source3:  rk3566_ddr_1056MHz_v1.23.bin
+# https://github.com/rockchip-linux/rkbin/blob/master/bin/rk35/rk3566_ddr_1056MHz_v1.25.bin
+Source3:  rk3566_ddr_1056MHz_v1.25.bin
 
 Patch0:   enable-bootmenu-by-default.patch
 Patch1:   disable-VBE-by-default.patch
@@ -101,7 +101,7 @@ dtc -@ -I dts -O dtb -o letstrust-tpm-spi-gpio.dtbo %{SOURCE2}
 mkdir -p builds/radxa-zero-3-rk3566
 make radxa-zero-3-rk3566_defconfig O=builds/radxa-zero-3-rk3566/
 BL31=/usr/share/arm-trusted-firmware/rk3568/bl31.elf \
-ROCKCHIP_TPL=rk3566_ddr_1056MHz_v1.23.bin \
+ROCKCHIP_TPL=rk3566_ddr_1056MHz_v1.25.bin \
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/radxa-zero-3-rk3566/
 
 %install
@@ -113,12 +113,8 @@ install -pDm 0644 letstrust-tpm-spi-gpio.dtbo \
   %{buildroot}%{_datadir}/%{name}/rpi4/letstrust-tpm-spi-gpio.dtbo
 
 # Radxa Zero 3
-for file in u-boot-rockchip.bin u-boot-rockchip-spi.bin; do
-  if [ -f builds/radxa-zero-3-rk3566/${file} ]; then
-    install -pDm 0644 builds/radxa-zero-3-rk3566/${file} \
-      %{buildroot}%{_datadir}/%{name}/radxa-zero-3/${file}
-  fi
-done
+install -pDm 0644 builds/radxa-zero-3-rk3566/u-boot-rockchip.bin \
+  %{buildroot}%{_datadir}/%{name}/radxa-zero-3/u-boot-rockchip.bin
 
 %files rpi4
 %license Licenses/gpl-2.0.txt
@@ -140,9 +136,12 @@ done
 %dir %{_datadir}/%{name}/
 %dir %{_datadir}/%{name}/radxa-zero-3/
 %{_datadir}/%{name}/radxa-zero-3/u-boot-rockchip.bin
-%{_datadir}/%{name}/radxa-zero-3/u-boot-rockchip-spi.bin
 
 %changelog
+* Tue Oct 13 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-7
+- Update to U-Boot 2026.10 GA release.
+- Update Rockchip DDR blob to v1.25.
+
 * Tue Oct 13 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-6.rc3
 - Add Radxa Zero 3 (rk3566) support.
 
