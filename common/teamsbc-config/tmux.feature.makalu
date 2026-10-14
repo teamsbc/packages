@@ -1,0 +1,4 @@
+[Feature]
+Description=tmux terminal multiplexer
+Documentation=https://github.com/tmux/tmux/wiki
+Enabled=false

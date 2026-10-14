@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        12
+Release:        13
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -21,6 +21,8 @@ Source6:        50-root.conf.makalu
 Source7:        20-usr.transfer.makalu
 Source8:        RPM-GPG-KEY-teamsbc
 Source9:        10-uki.transfer.makalu
+Source10:       30-tmux.transfer.makalu
+Source11:       tmux.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -80,13 +82,16 @@ install -m 644 %{_sourcedir}/50-root.conf.makalu %{buildroot}%{_prefix}/lib/repa
 install -d %{buildroot}%{_prefix}/lib/sysupdate.d
 install -m 644 %{_sourcedir}/10-uki.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/10-uki.transfer.makalu
 install -m 644 %{_sourcedir}/20-usr.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+install -m 644 %{_sourcedir}/30-tmux.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu
+install -m 644 %{_sourcedir}/tmux.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/tmux.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
 sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        -e 's/@@BASEARCH@@/%{_arch}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/10-uki.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu
 
 %check
 
@@ -107,13 +112,15 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 
 %{_prefix}/lib/sysupdate.d/10-uki.transfer.makalu
 %{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
+%{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu
+%{_prefix}/lib/sysupdate.d/tmux.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -131,6 +138,9 @@ if image_id then
 end
 
 %changelog
+* Wed Oct 14 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
+- Ship an optional tmux sysupdate feature and transfer for Makalu.
+
 * Sat Oct 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-12
 - Ship sysupdate transfer for the UKI alongside the usr partition.
 
