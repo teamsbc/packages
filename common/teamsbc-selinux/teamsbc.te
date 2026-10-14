@@ -58,3 +58,15 @@ require {
 }
 
 allow systemd_importd_t fixed_disk_device_t:blk_file { getattr open read write };
+
+# Allow systemd-importd (systemd-pull) to download system extension images
+# into /var/lib/extensions, which is labeled init_var_lib_t. Include access
+# to rename completed downloads and remove partial or obsolete images.
+require {
+	type init_var_lib_t;
+	class dir { getattr open read search write add_name remove_name };
+	class file { create getattr setattr open read write rename unlink lock };
+}
+
+allow systemd_importd_t init_var_lib_t:dir { getattr open read search write add_name remove_name };
+allow systemd_importd_t init_var_lib_t:file { create getattr setattr open read write rename unlink lock };
