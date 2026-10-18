@@ -5,7 +5,7 @@
 
 Name:           teamsbc-selinux
 Version:        %{dist_version}
-Release:        8
+Release:        9
 Summary:        TeamSBC SELinux policies 
 
 License:        MIT
@@ -60,6 +60,9 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Sun Oct 18 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-9
+- Allow sysupdate, bless-boot, and systemd-pull to access removable boot media.
+
 * Wed Oct 14 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-8
 - Allow systemd-importd to download and manage system extension images.
 

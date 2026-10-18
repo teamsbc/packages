@@ -50,14 +50,29 @@ allow systemd_importd_t sysctl_net_t:dir search;
 allow systemd_importd_t sysctl_net_t:file { getattr open read };
 allow systemd_importd_t tmpfs_t:file { read write };
 
-# Allow systemd-sysupdate (running as systemd_importd_t) to access block
-# devices for partition-based updates.
+# Allow systemd-importd (systemd-pull) to access fixed-disk block devices
+# for partition-based updates.
 require {
 	type fixed_disk_device_t;
 	class blk_file { getattr open read write };
 }
 
 allow systemd_importd_t fixed_disk_device_t:blk_file { getattr open read write };
+
+# Allow systemd-sysupdate and systemd-bless-boot (running as init_t) to
+# access removable block devices, including microSD boot media. Sysupdate
+# also needs device ioctls and locking when updating partitions.
+# See: https://github.com/teamsbc/distribution/issues/78
+require {
+	type removable_device_t;
+	class blk_file { getattr open read write ioctl lock };
+}
+
+allow init_t removable_device_t:blk_file { getattr open read write ioctl lock };
+
+# Allow systemd-importd (systemd-pull) to write partition-based updates to
+# removable media, just as it does for fixed disks.
+allow systemd_importd_t removable_device_t:blk_file { getattr open read write };
 
 # Allow systemd-importd (systemd-pull) to download system extension images
 # into /var/lib/extensions, which is labeled init_var_lib_t. Include access
