@@ -5,7 +5,7 @@
 
 Name:     teamsbc-uboot
 Version:  2026.10
-Release:  7%{?candidate:.%{candidate}}%{?dist}
+Release:  8%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot firmware images for TeamSBC
 License:  GPL-2.0-or-later AND LicenseRef-Callaway-BSD AND LGPL-2.1-or-later AND LGPL-2.0-or-later
 URL:      https://u-boot-project.org/
@@ -20,6 +20,10 @@ Source3:  rk3566_ddr_1056MHz_v1.25.bin
 Patch0:   enable-bootmenu-by-default.patch
 Patch1:   disable-VBE-by-default.patch
 Patch2:   uefi-enable-SetVariableRT-with-volotile-storage.patch
+# Fedora Raspberry Pi patches, applied only to the separate RPi 5 source tree
+Patch3:   Fix-NVMe-not-only-on-Raspberry-Pi-5.patch
+Patch4:   raspberrypi-Add-quirk-for-RPi5-2Gb-rev-1.0.patch
+Patch5:   rpi-copy-chosen-bootloader-partition-and-set-boot_partition.patch
 
 BuildRequires: bc
 BuildRequires: bison
@@ -82,17 +86,31 @@ BuildArch: noarch
 U-Boot firmware image for Radxa Zero 3 (rk3566).
 
 %prep
-%autosetup -p1 -n u-boot-v%{uboot_version}
+%autosetup -N -n u-boot-v%{uboot_version}
+%autopatch -p1 -M 2
+
+# Unpack a second source tree so the RPi 5 patches do not affect other boards.
+%setup -q -D -T -a 0 -n u-boot-v%{uboot_version}
+mv u-boot-v%{uboot_version} rpi5
+(
+  cd rpi5
+  %autopatch -p1
+)
 cp %{SOURCE3} .
 
 %build
-# Both RPi 4 and RPi 5 use the unified rpi_arm64 defconfig
-mkdir -p builds/rpi_arm64
-make rpi_arm64_defconfig O=builds/rpi_arm64/
-# Merge TPM2 measured boot config fragment
-./scripts/kconfig/merge_config.sh -m -O builds/rpi_arm64/ builds/rpi_arm64/.config %{SOURCE1}
-make olddefconfig O=builds/rpi_arm64/
-%make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/rpi_arm64/
+# Both boards use rpi_arm64_defconfig, with the RPi 5 fixes in a separate tree.
+for srcdir in . rpi5; do
+  (
+    cd "$srcdir"
+    mkdir -p builds/rpi_arm64
+    make rpi_arm64_defconfig O=builds/rpi_arm64/
+    # Merge TPM2 measured boot config fragment
+    ./scripts/kconfig/merge_config.sh -m -O builds/rpi_arm64/ builds/rpi_arm64/.config %{SOURCE1}
+    make olddefconfig O=builds/rpi_arm64/
+    %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/rpi_arm64/
+  )
+done
 
 # Compile TPM SPI GPIO device tree overlay
 dtc -@ -I dts -O dtb -o letstrust-tpm-spi-gpio.dtbo %{SOURCE2}
@@ -105,10 +123,10 @@ ROCKCHIP_TPL=rk3566_ddr_1056MHz_v1.25.bin \
 %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/radxa-zero-3-rk3566/
 
 %install
-for board in rpi4 rpi5; do
-  install -pDm 0644 builds/rpi_arm64/u-boot.bin \
-    %{buildroot}%{_datadir}/%{name}/${board}/u-boot.bin
-done
+install -pDm 0644 builds/rpi_arm64/u-boot.bin \
+  %{buildroot}%{_datadir}/%{name}/rpi4/u-boot.bin
+install -pDm 0644 rpi5/builds/rpi_arm64/u-boot.bin \
+  %{buildroot}%{_datadir}/%{name}/rpi5/u-boot.bin
 install -pDm 0644 letstrust-tpm-spi-gpio.dtbo \
   %{buildroot}%{_datadir}/%{name}/rpi4/letstrust-tpm-spi-gpio.dtbo
 
@@ -138,6 +156,10 @@ install -pDm 0644 builds/radxa-zero-3-rk3566/u-boot-rockchip.bin \
 %{_datadir}/%{name}/radxa-zero-3/u-boot-rockchip.bin
 
 %changelog
+* Tue Oct 20 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-8
+- Import Fedora NVMe, 2 GB board revision, and boot partition patches for RPi 5.
+- Build RPi 5 separately to preserve the RPi 4 and Radxa patch sets.
+
 * Tue Oct 13 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-7
 - Update to U-Boot 2026.10 GA release.
 - Update Rockchip DDR blob to v1.25.
