@@ -123,6 +123,11 @@ jobs:
             pushd "$DIR"
             mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
             find . -maxdepth 1 -type f -exec cp -v {} SOURCES/ \;
+            # RPM resolves Source/Patch entries by basename. Packages may keep
+            # their local inputs organized below sources/ in the checkout.
+            if [ -d sources ]; then
+              find sources -type f -exec cp -v {} SOURCES/ \;
+            fi
             for url in $(rpmspec -P ./*.spec | grep -oP '^Source\d*:\s+\Khttps?://\S+'); do
               curl -fsSL -o "SOURCES/$(basename $url)" "$url"
             done

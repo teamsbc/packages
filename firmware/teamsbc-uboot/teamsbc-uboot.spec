@@ -5,26 +5,31 @@
 
 Name:     teamsbc-uboot
 Version:  2026.10
-Release:  8%{?candidate:.%{candidate}}%{?dist}
+Release:  9%{?candidate:.%{candidate}}%{?dist}
 Summary:  U-Boot firmware images for TeamSBC
 License:  GPL-2.0-or-later AND LicenseRef-Callaway-BSD AND LGPL-2.1-or-later AND LGPL-2.0-or-later
 URL:      https://u-boot-project.org/
 ExclusiveArch: aarch64
 
 Source0:  https://git.u-boot-project.org/u-boot/u-boot/-/archive/v%{uboot_version}/u-boot-v%{uboot_version}.tar.bz2
-Source1:  rpi4-tpm-measured-boot.config
-Source2:  rpi4-tpm-spi-gpio.dts
+# TPM configuration shared by both Raspberry Pi builds.
+Source1:  rpi-tpm-measured-boot.config
+# LetsTrust overlay shipped only for Raspberry Pi 4.
+Source2:  rpi4-letstrust.dts
 # https://github.com/rockchip-linux/rkbin/blob/master/bin/rk35/rk3566_ddr_1056MHz_v1.25.bin
 Source3:  rk3566_ddr_1056MHz_v1.25.bin
 
+# Shared Fedora patches (0-99), applied to every board.
 Patch0:   enable-bootmenu-by-default.patch
-Patch1:   disable-VBE-by-default.patch
-Patch2:   uefi-enable-SetVariableRT-with-volotile-storage.patch
-# Fedora Raspberry Pi patches, applied only to the separate RPi 5 source tree
-Patch3:   Fix-NVMe-not-only-on-Raspberry-Pi-5.patch
-Patch4:   raspberrypi-Add-quirk-for-RPi5-2Gb-rev-1.0.patch
-Patch5:   rpi-copy-chosen-bootloader-partition-and-set-boot_partition.patch
+Patch1:   disable-vbe-by-default.patch
+Patch2:   efi-enable-set-variable-rt-with-volatile-storage.patch
 
+# Raspberry Pi 5 patches (100-199), applied only to its source tree.
+Patch100: fix-nvme-on-raspberry-pi-5.patch
+Patch101: rpi5-2gb-rev-1.0-quirk.patch
+Patch102: rpi-copy-bootloader-partition.patch
+
+BuildRequires: arm-trusted-firmware-armv8
 BuildRequires: bc
 BuildRequires: bison
 BuildRequires: dtc
@@ -49,7 +54,6 @@ BuildRequires: python3-setuptools
 BuildRequires: SDL2-devel
 BuildRequires: swig
 BuildRequires: xxd
-BuildRequires: arm-trusted-firmware-armv8
 
 %description
 U-Boot firmware images for TeamSBC supported boards.
@@ -86,76 +90,85 @@ BuildArch: noarch
 U-Boot firmware image for Radxa Zero 3 (rk3566).
 
 %prep
-%autosetup -N -n u-boot-v%{uboot_version}
-%autopatch -p1 -M 2
-
-# Unpack a second source tree so the RPi 5 patches do not affect other boards.
-%setup -q -D -T -a 0 -n u-boot-v%{uboot_version}
-mv u-boot-v%{uboot_version} rpi5
+%setup -q -c -n %{name}-%{uboot_version}
+mv u-boot-v%{uboot_version} u-boot
 (
-  cd rpi5
-  %autopatch -p1
+  cd u-boot
+  %autopatch -p1 -M 99
 )
-cp %{SOURCE3} .
+
+# Derive the RPi 5 tree from the shared tree before applying its extra patches.
+cp -a u-boot u-boot-rpi5
+(
+  cd u-boot-rpi5
+  %autopatch -p1 -m 100 -M 199
+)
 
 %build
-# Both boards use rpi_arm64_defconfig, with the RPi 5 fixes in a separate tree.
-for srcdir in . rpi5; do
-  (
-    cd "$srcdir"
-    mkdir -p builds/rpi_arm64
-    make rpi_arm64_defconfig O=builds/rpi_arm64/
-    # Merge TPM2 measured boot config fragment
-    ./scripts/kconfig/merge_config.sh -m -O builds/rpi_arm64/ builds/rpi_arm64/.config %{SOURCE1}
-    make olddefconfig O=builds/rpi_arm64/
-    %make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/rpi_arm64/
-  )
+# Raspberry Pi 4 and 5 share a defconfig and TPM fragment, but not a patch set.
+for board in rpi4 rpi5; do
+  srcdir=u-boot
+  if [ "$board" = rpi5 ]; then
+    srcdir=u-boot-rpi5
+  fi
+  builddir="$PWD/builds/$board"
+  mkdir -p "$builddir"
+  make -C "$srcdir" rpi_arm64_defconfig O="$builddir"
+  "$srcdir/scripts/kconfig/merge_config.sh" -m -O "$builddir" \
+    "$builddir/.config" %{SOURCE1}
+  make -C "$srcdir" olddefconfig O="$builddir"
+  %make_build -C "$srcdir" HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O="$builddir"
 done
 
-# Compile TPM SPI GPIO device tree overlay
-dtc -@ -I dts -O dtb -o letstrust-tpm-spi-gpio.dtbo %{SOURCE2}
+# Raspberry Pi 4 LetsTrust TPM overlay.
+dtc -@ -I dts -O dtb -o builds/rpi4/letstrust-tpm-spi-gpio.dtbo %{SOURCE2}
 
-# Radxa Zero 3 (rk3566)
-mkdir -p builds/radxa-zero-3-rk3566
-make radxa-zero-3-rk3566_defconfig O=builds/radxa-zero-3-rk3566/
+# Radxa Zero 3 (rk3566), using the shared source tree.
+mkdir -p builds/radxa-zero-3
+make -C u-boot radxa-zero-3-rk3566_defconfig O="$PWD/builds/radxa-zero-3"
 BL31=/usr/share/arm-trusted-firmware/rk3568/bl31.elf \
-ROCKCHIP_TPL=rk3566_ddr_1056MHz_v1.25.bin \
-%make_build HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O=builds/radxa-zero-3-rk3566/
+ROCKCHIP_TPL=%{SOURCE3} \
+%make_build -C u-boot HOSTCC="gcc $RPM_OPT_FLAGS" CROSS_COMPILE="" O="$PWD/builds/radxa-zero-3"
 
 %install
-install -pDm 0644 builds/rpi_arm64/u-boot.bin \
+install -pDm 0644 builds/rpi4/u-boot.bin \
   %{buildroot}%{_datadir}/%{name}/rpi4/u-boot.bin
-install -pDm 0644 rpi5/builds/rpi_arm64/u-boot.bin \
+install -pDm 0644 builds/rpi5/u-boot.bin \
   %{buildroot}%{_datadir}/%{name}/rpi5/u-boot.bin
-install -pDm 0644 letstrust-tpm-spi-gpio.dtbo \
+install -pDm 0644 builds/rpi4/letstrust-tpm-spi-gpio.dtbo \
   %{buildroot}%{_datadir}/%{name}/rpi4/letstrust-tpm-spi-gpio.dtbo
 
 # Radxa Zero 3
-install -pDm 0644 builds/radxa-zero-3-rk3566/u-boot-rockchip.bin \
+install -pDm 0644 builds/radxa-zero-3/u-boot-rockchip.bin \
   %{buildroot}%{_datadir}/%{name}/radxa-zero-3/u-boot-rockchip.bin
 
 %files rpi4
-%license Licenses/gpl-2.0.txt
+%license u-boot/Licenses/gpl-2.0.txt
 %dir %{_datadir}/%{name}/
 %dir %{_datadir}/%{name}/rpi4/
 %{_datadir}/%{name}/rpi4/u-boot.bin
 
 %files rpi4-letstrust
-%license Licenses/gpl-2.0.txt
+%license u-boot/Licenses/gpl-2.0.txt
 %{_datadir}/%{name}/rpi4/letstrust-tpm-spi-gpio.dtbo
 
 %files rpi5
-%license Licenses/gpl-2.0.txt
+%license u-boot/Licenses/gpl-2.0.txt
 %dir %{_datadir}/%{name}/
-%{_datadir}/%{name}/rpi5/
+%dir %{_datadir}/%{name}/rpi5/
+%{_datadir}/%{name}/rpi5/u-boot.bin
 
 %files radxa-zero-3
-%license Licenses/gpl-2.0.txt
+%license u-boot/Licenses/gpl-2.0.txt
 %dir %{_datadir}/%{name}/
 %dir %{_datadir}/%{name}/radxa-zero-3/
 %{_datadir}/%{name}/radxa-zero-3/u-boot-rockchip.bin
 
 %changelog
+* Tue Oct 20 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-9
+- Organize local sources and separate shared and RPi 5 patch ranges.
+- Use consistent per-board build directories and document the package layout.
+
 * Tue Oct 20 2026 Simon de Vlieger <cmdr@supakeen.com> - 2026.10-8
 - Import Fedora NVMe, 2 GB board revision, and boot partition patches for RPi 5.
 - Build RPi 5 separately to preserve the RPi 4 and Radxa patch sets.
