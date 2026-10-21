@@ -1,0 +1,13 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+
+# Fedora's kernel-core RPM requests only Type 1 cleanup on removal. With
+# layout=uki and uki_generator=ukify, its kernel also owns a locally built UKI.
+# Delegate cleanup to systemd so entry names, boot counters, and extras use
+# the same rules as 90-uki-copy.install.
+[ "$1" = remove ] || exit 0
+[ "$KERNEL_INSTALL_LAYOUT" = uki ] || exit 0
+[ "$KERNEL_INSTALL_UKI_GENERATOR" = ukify ] || exit 0
+[ "$KERNEL_INSTALL_BOOT_ENTRY_TYPE" = type1 ] || exit 0
+
+KERNEL_INSTALL_BOOT_ENTRY_TYPE=type2 exec /usr/lib/kernel/install.d/90-uki-copy.install "$@"

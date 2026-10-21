@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        31
+Release:        32
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -28,6 +28,7 @@ Recommends: teamsbc-release-identity-basic
 
 Source10: 90-default.preset
 Source11: 99-default-disable.preset
+Source12: 91-teamsbc-uki-remove.install
 
 %description
 TeamSBC release files
@@ -88,6 +89,10 @@ Provides:       teamsbc-release-identity = %{version}-%{release}
 Conflicts:      teamsbc-release-identity
 Requires(meta): teamsbc-release-lhotse = %{version}-%{release}
 
+# Generate a UKI whenever an RPM kernel is installed.
+Requires:       dracut
+Requires:       systemd-ukify
+
 %description identity-lhotse
 Provides the necessary files for a TeamSBC installation that is identifying
 itself as TeamSBC Lhotse.
@@ -143,9 +148,12 @@ install -d %{buildroot}%{_sysconfdir}/kernel
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 install -d %{buildroot}%{_prefix}/lib/kernel/install.conf.d
-echo "layout=bls" > %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
+echo "layout=uki" > %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
 echo "entry_name_format=%%M_%%v" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
+echo "initrd_generator=dracut" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
+echo "uki_generator=ukify" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
 echo "" > %{buildroot}%{_prefix}/lib/kernel/cmdline.lhotse
+install -Dm0755 %{SOURCE12} -t %{buildroot}%{_prefix}/lib/kernel/install.d/
 
 echo "layout=uki" > %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
 echo "entry_name_format=%%M_%%A" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
@@ -247,6 +255,8 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_prefix}/lib/os-release.lhotse
 %{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
 %{_prefix}/lib/kernel/cmdline.lhotse
+%dir %{_prefix}/lib/kernel/install.d
+%{_prefix}/lib/kernel/install.d/91-teamsbc-uki-remove.install
 %{_datadir}/dnf5/libdnf.conf.d/20-exclude-bcm283x.conf
 
 %files makalu
@@ -296,6 +306,10 @@ if image_id or image_version then
 end
 
 %changelog
+* Wed Oct 21 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-32
+- Generate per-kernel UKIs for Lhotse using dracut and ukify.
+- Remove locally generated UKIs when Fedora kernel RPMs are uninstalled.
+
 * Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-31
 - Move kernel config (entry-token, tries, install.conf, cmdline) from
   /etc/kernel to /usr/lib/kernel and DNF vendor config to
