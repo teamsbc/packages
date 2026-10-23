@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        13
+Release:        14
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -23,6 +23,10 @@ Source8:        RPM-GPG-KEY-teamsbc
 Source9:        10-uki.transfer.makalu
 Source10:       30-tmux.transfer.makalu
 Source11:       tmux.feature.makalu
+Source12:       30-screen.transfer.makalu
+Source13:       screen.feature.makalu
+Source14:       30-weechat.transfer.makalu
+Source15:       weechat.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -84,6 +88,10 @@ install -m 644 %{_sourcedir}/10-uki.transfer.makalu %{buildroot}%{_prefix}/lib/s
 install -m 644 %{_sourcedir}/20-usr.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
 install -m 644 %{_sourcedir}/30-tmux.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu
 install -m 644 %{_sourcedir}/tmux.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/tmux.feature.makalu
+install -m 644 %{_sourcedir}/30-screen.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-screen.transfer.makalu
+install -m 644 %{_sourcedir}/screen.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/screen.feature.makalu
+install -m 644 %{_sourcedir}/30-weechat.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-weechat.transfer.makalu
+install -m 644 %{_sourcedir}/weechat.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/weechat.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
@@ -91,7 +99,9 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        -e 's/@@BASEARCH@@/%{_arch}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/10-uki.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-screen.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-weechat.transfer.makalu
 
 %check
 
@@ -114,13 +124,17 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu
 %{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu
 %{_prefix}/lib/sysupdate.d/tmux.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-screen.transfer.makalu
+%{_prefix}/lib/sysupdate.d/screen.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-weechat.transfer.makalu
+%{_prefix}/lib/sysupdate.d/weechat.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -138,6 +152,9 @@ if image_id then
 end
 
 %changelog
+* Fri Oct 23 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-14
+- Ship optional screen and weechat sysupdate features and transfers for Makalu.
+
 * Wed Oct 14 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-13
 - Ship an optional tmux sysupdate feature and transfer for Makalu.
 

@@ -1,0 +1,4 @@
+[Feature]
+Description=WeeChat IRC client
+Documentation=https://weechat.org/
+Enabled=false

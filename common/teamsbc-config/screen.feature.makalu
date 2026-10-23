@@ -1,0 +1,4 @@
+[Feature]
+Description=GNU Screen terminal multiplexer
+Documentation=https://www.gnu.org/software/screen/
+Enabled=false
