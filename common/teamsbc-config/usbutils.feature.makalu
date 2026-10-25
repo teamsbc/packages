@@ -1,0 +1,4 @@
+[Feature]
+Description=USB device utilities
+Documentation=https://github.com/gregkh/usbutils
+Enabled=false

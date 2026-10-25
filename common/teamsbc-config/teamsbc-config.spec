@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        14
+Release:        15
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -27,6 +27,10 @@ Source12:       30-screen.transfer.makalu
 Source13:       screen.feature.makalu
 Source14:       30-weechat.transfer.makalu
 Source15:       weechat.feature.makalu
+Source16:       30-usbutils.transfer.makalu
+Source17:       usbutils.feature.makalu
+Source18:       30-pciutils.transfer.makalu
+Source19:       pciutils.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -92,6 +96,10 @@ install -m 644 %{_sourcedir}/30-screen.transfer.makalu %{buildroot}%{_prefix}/li
 install -m 644 %{_sourcedir}/screen.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/screen.feature.makalu
 install -m 644 %{_sourcedir}/30-weechat.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-weechat.transfer.makalu
 install -m 644 %{_sourcedir}/weechat.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/weechat.feature.makalu
+install -m 644 %{_sourcedir}/30-usbutils.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-usbutils.transfer.makalu
+install -m 644 %{_sourcedir}/usbutils.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/usbutils.feature.makalu
+install -m 644 %{_sourcedir}/30-pciutils.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-pciutils.transfer.makalu
+install -m 644 %{_sourcedir}/pciutils.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/pciutils.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
@@ -101,7 +109,9 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/20-usr.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-tmux.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-screen.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/30-weechat.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-weechat.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-usbutils.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-pciutils.transfer.makalu
 
 %check
 
@@ -128,13 +138,17 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/sysupdate.d/screen.feature.makalu
 %{_prefix}/lib/sysupdate.d/30-weechat.transfer.makalu
 %{_prefix}/lib/sysupdate.d/weechat.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-usbutils.transfer.makalu
+%{_prefix}/lib/sysupdate.d/usbutils.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-pciutils.transfer.makalu
+%{_prefix}/lib/sysupdate.d/pciutils.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -152,6 +166,9 @@ if image_id then
 end
 
 %changelog
+* Sun Oct 25 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-15
+- Ship optional usbutils and pciutils sysupdate features and transfers for Makalu.
+
 * Fri Oct 23 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-14
 - Ship optional screen and weechat sysupdate features and transfers for Makalu.
 

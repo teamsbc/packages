@@ -1,0 +1,4 @@
+[Feature]
+Description=PCI device utilities
+Documentation=https://mj.ucw.cz/sw/pciutils/
+Enabled=false
