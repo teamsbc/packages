@@ -1,0 +1,4 @@
+[Feature]
+Description=List open files
+Documentation=https://lsof.readthedocs.io/
+Enabled=false

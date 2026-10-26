@@ -1,0 +1,4 @@
+[Feature]
+Description=Trace system calls and signals
+Documentation=https://strace.io/
+Enabled=false
