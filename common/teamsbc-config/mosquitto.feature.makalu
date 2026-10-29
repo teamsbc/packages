@@ -1,0 +1,4 @@
+[Feature]
+Description=Mosquitto MQTT broker and clients
+Documentation=https://mosquitto.org/
+Enabled=false
