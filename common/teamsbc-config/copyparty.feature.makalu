@@ -1,0 +1,4 @@
+[Feature]
+Description=copyparty file server
+Documentation=https://github.com/9001/copyparty
+Enabled=false

@@ -1,0 +1,4 @@
+[Feature]
+Description=HAProxy load balancer and proxy server
+Documentation=https://www.haproxy.org/
+Enabled=false

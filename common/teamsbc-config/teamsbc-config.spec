@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        17
+Release:        18
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -37,6 +37,10 @@ Source22:       30-strace.transfer.makalu
 Source23:       strace.feature.makalu
 Source24:       30-mosquitto.transfer.makalu
 Source25:       mosquitto.feature.makalu
+Source26:       30-copyparty.transfer.makalu
+Source27:       copyparty.feature.makalu
+Source28:       30-haproxy.transfer.makalu
+Source29:       haproxy.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -112,6 +116,10 @@ install -m 644 %{_sourcedir}/30-strace.transfer.makalu %{buildroot}%{_prefix}/li
 install -m 644 %{_sourcedir}/strace.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/strace.feature.makalu
 install -m 644 %{_sourcedir}/30-mosquitto.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-mosquitto.transfer.makalu
 install -m 644 %{_sourcedir}/mosquitto.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/mosquitto.feature.makalu
+install -m 644 %{_sourcedir}/30-copyparty.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-copyparty.transfer.makalu
+install -m 644 %{_sourcedir}/copyparty.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/copyparty.feature.makalu
+install -m 644 %{_sourcedir}/30-haproxy.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu
+install -m 644 %{_sourcedir}/haproxy.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/haproxy.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
@@ -126,7 +134,9 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-pciutils.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-lsof.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-strace.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/30-mosquitto.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-mosquitto.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-copyparty.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu
 
 %check
 
@@ -163,13 +173,17 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/sysupdate.d/strace.feature.makalu
 %{_prefix}/lib/sysupdate.d/30-mosquitto.transfer.makalu
 %{_prefix}/lib/sysupdate.d/mosquitto.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-copyparty.transfer.makalu
+%{_prefix}/lib/sysupdate.d/copyparty.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu
+%{_prefix}/lib/sysupdate.d/haproxy.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -187,6 +201,9 @@ if image_id then
 end
 
 %changelog
+* Sat Oct 31 2026 TeamSBC - %{fedora}-18
+- Ship optional copyparty and HAProxy sysupdate features and transfers for Makalu.
+
 * Thu Oct 29 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-17
 - Ship an optional Mosquitto sysupdate feature and transfer for Makalu.
 
