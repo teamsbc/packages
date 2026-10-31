@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        18
+Release:        19
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -41,6 +41,8 @@ Source26:       30-copyparty.transfer.makalu
 Source27:       copyparty.feature.makalu
 Source28:       30-haproxy.transfer.makalu
 Source29:       haproxy.feature.makalu
+Source30:       30-lm_sensors.transfer.makalu
+Source31:       lm_sensors.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -120,6 +122,8 @@ install -m 644 %{_sourcedir}/30-copyparty.transfer.makalu %{buildroot}%{_prefix}
 install -m 644 %{_sourcedir}/copyparty.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/copyparty.feature.makalu
 install -m 644 %{_sourcedir}/30-haproxy.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu
 install -m 644 %{_sourcedir}/haproxy.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/haproxy.feature.makalu
+install -m 644 %{_sourcedir}/30-lm_sensors.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-lm_sensors.transfer.makalu
+install -m 644 %{_sourcedir}/lm_sensors.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/lm_sensors.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
@@ -136,7 +140,8 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-strace.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-mosquitto.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-copyparty.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-lm_sensors.transfer.makalu
 
 %check
 
@@ -177,13 +182,15 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/sysupdate.d/copyparty.feature.makalu
 %{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu
 %{_prefix}/lib/sysupdate.d/haproxy.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-lm_sensors.transfer.makalu
+%{_prefix}/lib/sysupdate.d/lm_sensors.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer", "30-lm_sensors.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -201,6 +208,9 @@ if image_id then
 end
 
 %changelog
+* Sat Oct 31 2026 TeamSBC - %{fedora}-19
+- Ship an optional lm_sensors sysupdate feature and transfer for Makalu.
+
 * Sat Oct 31 2026 TeamSBC - %{fedora}-18
 - Ship optional copyparty and HAProxy sysupdate features and transfers for Makalu.
 

@@ -1,0 +1,4 @@
+[Feature]
+Description=Hardware monitoring utilities
+Documentation=https://github.com/lm-sensors/lm-sensors
+Enabled=false
