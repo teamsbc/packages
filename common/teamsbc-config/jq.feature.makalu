@@ -1,0 +1,4 @@
+[Feature]
+Description=JSON processor
+Documentation=https://jqlang.org/
+Enabled=false

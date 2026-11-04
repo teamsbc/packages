@@ -1,0 +1,4 @@
+[Feature]
+Description=I2C OLED system information display
+Documentation=https://github.com/ausil/i2c-display
+Enabled=false

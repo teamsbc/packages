@@ -1,0 +1,4 @@
+[Feature]
+Description=Fast text search
+Documentation=https://github.com/BurntSushi/ripgrep
+Enabled=false

@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        20
+Release:        21
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -43,6 +43,34 @@ Source28:       30-haproxy.transfer.makalu
 Source29:       haproxy.feature.makalu
 Source30:       30-lm-sensors.transfer.makalu
 Source31:       lm-sensors.feature.makalu
+Source32:       30-jq.transfer.makalu
+Source33:       jq.feature.makalu
+Source34:       30-tcpdump.transfer.makalu
+Source35:       tcpdump.feature.makalu
+Source36:       30-htop.transfer.makalu
+Source37:       htop.feature.makalu
+Source38:       30-iperf3.transfer.makalu
+Source39:       iperf3.feature.makalu
+Source40:       30-ethtool.transfer.makalu
+Source41:       ethtool.feature.makalu
+Source42:       30-smartmontools.transfer.makalu
+Source43:       smartmontools.feature.makalu
+Source44:       30-nvme-cli.transfer.makalu
+Source45:       nvme-cli.feature.makalu
+Source46:       30-bind-utils.transfer.makalu
+Source47:       bind-utils.feature.makalu
+Source48:       30-ripgrep.transfer.makalu
+Source49:       ripgrep.feature.makalu
+Source50:       30-nmap.transfer.makalu
+Source51:       nmap.feature.makalu
+Source52:       30-fio.transfer.makalu
+Source53:       fio.feature.makalu
+Source54:       30-i2c-tools.transfer.makalu
+Source55:       i2c-tools.feature.makalu
+Source56:       30-bpftrace.transfer.makalu
+Source57:       bpftrace.feature.makalu
+Source58:       30-i2c-display.transfer.makalu
+Source59:       i2c-display.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -124,6 +152,34 @@ install -m 644 %{_sourcedir}/30-haproxy.transfer.makalu %{buildroot}%{_prefix}/l
 install -m 644 %{_sourcedir}/haproxy.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/haproxy.feature.makalu
 install -m 644 %{_sourcedir}/30-lm-sensors.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-lm-sensors.transfer.makalu
 install -m 644 %{_sourcedir}/lm-sensors.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/lm-sensors.feature.makalu
+install -m 644 %{_sourcedir}/30-jq.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-jq.transfer.makalu
+install -m 644 %{_sourcedir}/jq.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/jq.feature.makalu
+install -m 644 %{_sourcedir}/30-tcpdump.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-tcpdump.transfer.makalu
+install -m 644 %{_sourcedir}/tcpdump.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/tcpdump.feature.makalu
+install -m 644 %{_sourcedir}/30-htop.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-htop.transfer.makalu
+install -m 644 %{_sourcedir}/htop.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/htop.feature.makalu
+install -m 644 %{_sourcedir}/30-iperf3.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-iperf3.transfer.makalu
+install -m 644 %{_sourcedir}/iperf3.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/iperf3.feature.makalu
+install -m 644 %{_sourcedir}/30-ethtool.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-ethtool.transfer.makalu
+install -m 644 %{_sourcedir}/ethtool.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/ethtool.feature.makalu
+install -m 644 %{_sourcedir}/30-smartmontools.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-smartmontools.transfer.makalu
+install -m 644 %{_sourcedir}/smartmontools.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/smartmontools.feature.makalu
+install -m 644 %{_sourcedir}/30-nvme-cli.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-nvme-cli.transfer.makalu
+install -m 644 %{_sourcedir}/nvme-cli.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/nvme-cli.feature.makalu
+install -m 644 %{_sourcedir}/30-bind-utils.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-bind-utils.transfer.makalu
+install -m 644 %{_sourcedir}/bind-utils.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/bind-utils.feature.makalu
+install -m 644 %{_sourcedir}/30-ripgrep.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-ripgrep.transfer.makalu
+install -m 644 %{_sourcedir}/ripgrep.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/ripgrep.feature.makalu
+install -m 644 %{_sourcedir}/30-nmap.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-nmap.transfer.makalu
+install -m 644 %{_sourcedir}/nmap.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/nmap.feature.makalu
+install -m 644 %{_sourcedir}/30-fio.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-fio.transfer.makalu
+install -m 644 %{_sourcedir}/fio.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/fio.feature.makalu
+install -m 644 %{_sourcedir}/30-i2c-tools.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-tools.transfer.makalu
+install -m 644 %{_sourcedir}/i2c-tools.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/i2c-tools.feature.makalu
+install -m 644 %{_sourcedir}/30-bpftrace.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-bpftrace.transfer.makalu
+install -m 644 %{_sourcedir}/bpftrace.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/bpftrace.feature.makalu
+install -m 644 %{_sourcedir}/30-i2c-display.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu
+install -m 644 %{_sourcedir}/i2c-display.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/i2c-display.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
@@ -141,7 +197,21 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-mosquitto.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-copyparty.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-haproxy.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/30-lm-sensors.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-lm-sensors.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-jq.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-tcpdump.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-htop.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-iperf3.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-ethtool.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-smartmontools.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-nvme-cli.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-bind-utils.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-ripgrep.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-nmap.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-fio.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-tools.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-bpftrace.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu
 
 %check
 
@@ -184,13 +254,41 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/sysupdate.d/haproxy.feature.makalu
 %{_prefix}/lib/sysupdate.d/30-lm-sensors.transfer.makalu
 %{_prefix}/lib/sysupdate.d/lm-sensors.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-jq.transfer.makalu
+%{_prefix}/lib/sysupdate.d/jq.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-tcpdump.transfer.makalu
+%{_prefix}/lib/sysupdate.d/tcpdump.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-htop.transfer.makalu
+%{_prefix}/lib/sysupdate.d/htop.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-iperf3.transfer.makalu
+%{_prefix}/lib/sysupdate.d/iperf3.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-ethtool.transfer.makalu
+%{_prefix}/lib/sysupdate.d/ethtool.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-smartmontools.transfer.makalu
+%{_prefix}/lib/sysupdate.d/smartmontools.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-nvme-cli.transfer.makalu
+%{_prefix}/lib/sysupdate.d/nvme-cli.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-bind-utils.transfer.makalu
+%{_prefix}/lib/sysupdate.d/bind-utils.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-ripgrep.transfer.makalu
+%{_prefix}/lib/sysupdate.d/ripgrep.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-nmap.transfer.makalu
+%{_prefix}/lib/sysupdate.d/nmap.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-fio.transfer.makalu
+%{_prefix}/lib/sysupdate.d/fio.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-i2c-tools.transfer.makalu
+%{_prefix}/lib/sysupdate.d/i2c-tools.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-bpftrace.transfer.makalu
+%{_prefix}/lib/sysupdate.d/bpftrace.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu
+%{_prefix}/lib/sysupdate.d/i2c-display.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer", "30-lm-sensors.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer", "30-lm-sensors.transfer", "30-jq.transfer", "30-tcpdump.transfer", "30-htop.transfer", "30-iperf3.transfer", "30-ethtool.transfer", "30-smartmontools.transfer", "30-nvme-cli.transfer", "30-bind-utils.transfer", "30-ripgrep.transfer", "30-nmap.transfer", "30-fio.transfer", "30-i2c-tools.transfer", "30-bpftrace.transfer", "30-i2c-display.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -208,6 +306,9 @@ if image_id then
 end
 
 %changelog
+* Wed Nov 04 2026 TeamSBC - %{fedora}-21
+- Add optional Makalu utilities and i2c-display system extensions.
+
 * Tue Nov 03 2026 TeamSBC - %{fedora}-20
 - Rename the lm-sensors sysupdate feature to match its extension image.
 

@@ -1,0 +1,4 @@
+[Feature]
+Description=DNS query utilities
+Documentation=https://www.isc.org/bind/
+Enabled=false

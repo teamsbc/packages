@@ -1,0 +1,4 @@
+[Feature]
+Description=Storage device health monitoring
+Documentation=https://www.smartmontools.org/
+Enabled=false

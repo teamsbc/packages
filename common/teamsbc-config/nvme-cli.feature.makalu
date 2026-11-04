@@ -1,0 +1,4 @@
+[Feature]
+Description=NVMe management utilities
+Documentation=https://github.com/linux-nvme/nvme-cli
+Enabled=false

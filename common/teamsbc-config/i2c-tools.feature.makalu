@@ -1,0 +1,4 @@
+[Feature]
+Description=I2C device diagnostics
+Documentation=https://i2c.wiki.kernel.org/
+Enabled=false

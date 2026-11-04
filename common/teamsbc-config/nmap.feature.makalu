@@ -1,0 +1,4 @@
+[Feature]
+Description=Network discovery and security scanning
+Documentation=https://nmap.org/
+Enabled=false

@@ -1,0 +1,4 @@
+[Feature]
+Description=Storage benchmarking
+Documentation=https://github.com/axboe/fio
+Enabled=false

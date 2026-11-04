@@ -1,0 +1,4 @@
+[Feature]
+Description=eBPF tracing
+Documentation=https://bpftrace.org/
+Enabled=false

@@ -1,0 +1,4 @@
+[Feature]
+Description=Ethernet device configuration and diagnostics
+Documentation=https://www.kernel.org/pub/software/network/ethtool/
+Enabled=false

@@ -1,0 +1,4 @@
+[Feature]
+Description=Network throughput measurement
+Documentation=https://software.es.net/iperf/
+Enabled=false

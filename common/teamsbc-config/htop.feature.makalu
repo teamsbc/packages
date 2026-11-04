@@ -1,0 +1,4 @@
+[Feature]
+Description=Interactive process viewer
+Documentation=https://htop.dev/
+Enabled=false
