@@ -45,11 +45,6 @@ jobs:
       REPO_URI: s3://teamsbc-packages/${{ github.ref_name }}/latest/${{ matrix.build.version }}/${{ matrix.build.arch }}/${{ matrix.repository }}
       REPOSITORY: ${{ matrix.repository }}
     steps:
-      - name: "Install Git"
-        run: |
-          if ! command -v git >/dev/null 2>&1; then
-            dnf install -y git-core
-          fi
       - name: "Checkout Code"
         uses: actions/checkout@v6
         with:
@@ -176,6 +171,8 @@ jobs:
     name: Cleanup Repositories
     needs: build-rpms
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/teamsbc/ci-packages:fedora-46
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -184,8 +181,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
-      - name: Install zstd
-        run: sudo apt-get update && sudo apt-get install -y zstd
       - name: Remove unreferenced objects
         run: |
           python3 .github/scripts/package_repository.py cleanup-tree "$REPO_URI"
@@ -223,6 +218,8 @@ jobs:
     name: Cleanup Snapshots
     needs: snapshot
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/teamsbc/ci-packages:fedora-46
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -241,8 +238,6 @@ jobs:
                 echo "Removing $BRANCH/$DATE/"
                 aws s3 rm --recursive "s3://teamsbc-packages/$BRANCH/$DATE/"
               done
-      - name: "Install zstd"
-        run: sudo apt-get update && sudo apt-get install -y zstd
       - name: "Remove unreferenced objects from retained snapshots"
         run: |
           aws s3 ls "s3://teamsbc-packages/$BRANCH/" \
