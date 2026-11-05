@@ -172,9 +172,27 @@ jobs:
           aws s3 cp "$MERGED/repodata/repomd.xml" \
             "$REPO_URI/repodata/repomd.xml" --no-progress
 
+  cleanup-repositories:
+    name: Cleanup Repositories
+    needs: build-rpms
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
+      REPO_URI: s3://teamsbc-packages/${{ github.ref_name }}/latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install -y zstd
+      - name: Remove unreferenced objects
+        run: |
+          python3 .github/scripts/package_repository.py cleanup-tree "$REPO_URI"
+
   snapshot:
     name: Create Snapshot
-    needs: build-rpms
+    needs: cleanup-repositories
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/teamsbc/ci-packages:fedora-46
@@ -211,6 +229,8 @@ jobs:
       AWS_ENDPOINT_URL: ${{ secrets.R2_ENDPOINT }}
       BRANCH: ${{ github.ref_name }}
     steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v6
       - name: "Keep only the 5 most recent dated builds"
         run: |
           aws s3 ls "s3://teamsbc-packages/$BRANCH/" \
@@ -220,6 +240,16 @@ jobs:
             | while IFS= read -r DATE; do
                 echo "Removing $BRANCH/$DATE/"
                 aws s3 rm --recursive "s3://teamsbc-packages/$BRANCH/$DATE/"
+              done
+      - name: "Install zstd"
+        run: sudo apt-get update && sudo apt-get install -y zstd
+      - name: "Remove unreferenced objects from retained snapshots"
+        run: |
+          aws s3 ls "s3://teamsbc-packages/$BRANCH/" \
+            | awk '$1 == "PRE" && $2 ~ /^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\/$/ { sub(/\/$/, "", $2); print $2 }' \
+            | while IFS= read -r DATE; do
+                python3 .github/scripts/package_repository.py cleanup-tree \
+                  "s3://teamsbc-packages/$BRANCH/$DATE"
               done
 
   generate-index:

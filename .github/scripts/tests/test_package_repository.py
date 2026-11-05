@@ -161,6 +161,101 @@ class FetchTests(unittest.TestCase):
                 repository.fetch_metadata("s3://bucket/main/latest", Path(temp))
 
 
+class CleanupTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.directory = Path(self.temp.name)
+        (self.directory / "repodata").mkdir()
+        (self.directory / "repodata/repomd.xml").write_text(
+            f'<repomd xmlns="{repository.REPOMD_NS}">'
+            '<data type="primary"><location href="repodata/primary.xml"/></data>'
+            '<data type="filelists"><location href="repodata/filelists.xml"/></data>'
+            '</repomd>'
+        )
+        (self.directory / "repodata/primary.xml").write_text(
+            f'<metadata xmlns="{repository.PRIMARY_NS}" packages="1">'
+            '<package><location href="packages/current.rpm"/></package></metadata>'
+        )
+        self.prefix = "main/latest/46/x86_64/common/"
+        self.objects = [self.prefix + name for name in (
+            "repodata/repomd.xml", "repodata/primary.xml", "repodata/filelists.xml",
+            "packages/current.rpm", "old.rpm", "repodata/old.xml.gz", "index.html",
+        )]
+
+    @patch.object(repository, "fetch_metadata")
+    @patch.object(repository.subprocess, "check_output")
+    def test_removes_only_unreferenced_rpms_and_metadata(self, check_output, fetch):
+        check_output.side_effect = [
+            json.dumps({"Contents": [{"Key": key} for key in self.objects]}).encode(),
+            b'{}',
+        ]
+        repository.cleanup_repository("s3://bucket/" + self.prefix, self.directory)
+        args = check_output.call_args_list[1].args[0]
+        self.assertEqual(json.loads(args[args.index("--delete") + 1])["Objects"], [
+            {"Key": self.prefix + "old.rpm"},
+            {"Key": self.prefix + "repodata/old.xml.gz"},
+        ])
+
+    @patch.object(repository, "fetch_metadata")
+    @patch.object(repository.subprocess, "check_output")
+    def test_empty_quiet_delete_response_succeeds(self, check_output, fetch):
+        check_output.side_effect = [
+            json.dumps({"Contents": [{"Key": key} for key in self.objects]}).encode(),
+            b"",
+        ]
+        repository.cleanup_repository("s3://bucket/" + self.prefix, self.directory)
+        self.assertEqual(check_output.call_count, 2)
+
+    @unittest.skipUnless(shutil.which("zstd"), "zstd is required")
+    @patch.object(repository, "fetch_metadata")
+    def test_reads_zstd_primary_metadata(self, fetch):
+        primary = self.directory / "repodata/primary.xml"
+        subprocess.run(["zstd", "-q", str(primary), "-o", str(primary) + ".zst"], check=True)
+        manifest = self.directory / "repodata/repomd.xml"
+        manifest.write_text(manifest.read_text().replace("primary.xml", "primary.xml.zst"))
+        self.objects = [key.replace("primary.xml", "primary.xml.zst") for key in self.objects]
+        original = subprocess.check_output
+
+        def command(args):
+            if args[0] == "zstd":
+                return original(args)
+            if args[1] == "s3api" and args[2] == "list-objects-v2":
+                return json.dumps({"Contents": [{"Key": key} for key in self.objects]}).encode()
+            return b"{}"
+
+        with patch.object(repository.subprocess, "check_output", side_effect=command):
+            repository.cleanup_repository("s3://bucket/" + self.prefix, self.directory)
+
+    @patch.object(repository, "fetch_metadata")
+    @patch.object(repository.subprocess, "check_output")
+    def test_missing_referenced_object_prevents_deletion(self, check_output, fetch):
+        check_output.return_value = json.dumps({"Contents": [
+            {"Key": key} for key in self.objects if not key.endswith("current.rpm")
+        ]}).encode()
+        with self.assertRaises(ValueError):
+            repository.cleanup_repository("s3://bucket/" + self.prefix, self.directory)
+        self.assertEqual(check_output.call_count, 1)
+
+    @patch.object(repository, "fetch_metadata")
+    @patch.object(repository.subprocess, "check_output")
+    def test_invalid_primary_prevents_deletion(self, check_output, fetch):
+        (self.directory / "repodata/primary.xml").write_text("<invalid/>")
+        with self.assertRaises(ValueError):
+            repository.cleanup_repository("s3://bucket/" + self.prefix, self.directory)
+        check_output.assert_not_called()
+
+    @patch.object(repository, "fetch_metadata")
+    @patch.object(repository.subprocess, "check_output")
+    def test_delete_errors_fail_cleanup(self, check_output, fetch):
+        check_output.side_effect = [
+            json.dumps({"Contents": [{"Key": key} for key in self.objects]}).encode(),
+            b'{"Errors": [{"Key": "old.rpm", "Code": "AccessDenied"}]}',
+        ]
+        with self.assertRaises(RuntimeError):
+            repository.cleanup_repository("s3://bucket/" + self.prefix, self.directory)
+
+
 @unittest.skipUnless(cr is not None and shutil.which("createrepo_c") and shutil.which("mergerepo_c"),
                      "createrepo_c, mergerepo_c and Python bindings are required")
 class MergeTests(unittest.TestCase):

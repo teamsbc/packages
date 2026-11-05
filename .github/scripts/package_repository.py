@@ -2,17 +2,22 @@
 """Select package sources and update rpm-md repositories without fetching RPMs."""
 
 import argparse
+import bz2
+import gzip
+import lzma
 import json
 from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
 
 REPOMD_NS = "http://linux.duke.edu/metadata/repo"
+PRIMARY_NS = "http://linux.duke.edu/metadata/common"
 
 
 def git(root, *args):
@@ -72,9 +77,7 @@ def fetch_metadata(uri, directory):
         return
 
     def download(href):
-        path = PurePosixPath(href)
-        if path.is_absolute() or ".." in path.parts or urlsplit(href).scheme:
-            raise ValueError(f"Metadata path must be relative: {href}")
+        path = relative_path(href)
         target = directory / path
         target.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run(["aws", "s3", "cp", f"{uri.rstrip('/')}/{href}",
@@ -85,6 +88,106 @@ def fetch_metadata(uri, directory):
         f"{{{REPOMD_NS}}}data/{{{REPOMD_NS}}}location"
     ):
         download(item.attrib["href"])
+
+
+def relative_path(href):
+    path = PurePosixPath(href)
+    if (not href or path.is_absolute() or ".." in path.parts
+            or urlsplit(href).scheme or urlsplit(href).netloc
+            or urlsplit(href).query or urlsplit(href).fragment):
+        raise ValueError(f"Repository path must be relative: {href}")
+    return str(path)
+
+
+def cleanup_repository(uri, directory):
+    """Remove old, unreferenced RPMs and metadata after validating the manifest."""
+    fetch_metadata(uri, directory)
+    manifest = directory / "repodata/repomd.xml"
+    if not manifest.is_file():
+        print(f"No published repository at {uri}; skipping cleanup.")
+        return
+    root = ET.parse(manifest).getroot()
+    if root.tag != f"{{{REPOMD_NS}}}repomd":
+        raise ValueError("Invalid repository manifest")
+    referenced = {"repodata/repomd.xml"}
+    primary = []
+    for data in root.findall(f"{{{REPOMD_NS}}}data"):
+        location = data.find(f"{{{REPOMD_NS}}}location")
+        if location is None or "href" not in location.attrib:
+            raise ValueError("Metadata entry has no location")
+        href = relative_path(location.attrib["href"])
+        referenced.add(href)
+        if data.get("type") == "primary":
+            primary.append(href)
+    if len(primary) != 1:
+        raise ValueError("Expected exactly one primary metadata file")
+    primary_path = directory / primary[0]
+    opener = {".gz": gzip.open, ".bz2": bz2.open, ".xz": lzma.open}.get(
+        primary_path.suffix, open)
+    if primary_path.suffix == ".zst":
+        tree = ET.ElementTree(ET.fromstring(subprocess.check_output(
+            ["zstd", "--decompress", "--stdout", str(primary_path)])))
+    else:
+        with opener(primary_path, "rb") as stream:
+            tree = ET.parse(stream)
+    if tree.getroot().tag != f"{{{PRIMARY_NS}}}metadata":
+        raise ValueError("Invalid primary metadata")
+    packages = tree.getroot().findall(f"{{{PRIMARY_NS}}}package")
+    if int(tree.getroot().attrib["packages"]) != len(packages):
+        raise ValueError("Primary package count does not match its contents")
+    for package in packages:
+        location = package.find(f"{{{PRIMARY_NS}}}location")
+        if location is None or "href" not in location.attrib or location.get("base"):
+            raise ValueError("Package has no local location")
+        referenced.add(relative_path(location.attrib["href"]))
+
+    location = urlsplit(uri)
+    prefix = location.path.strip("/") + "/" if location.path.strip("/") else ""
+    objects = json.loads(subprocess.check_output([
+        "aws", "s3api", "list-objects-v2", "--bucket", location.netloc,
+        "--prefix", prefix, "--output", "json",
+    ])).get("Contents", [])
+    keys = {obj["Key"] for obj in objects}
+    missing = {prefix + path for path in referenced} - keys
+    if missing:
+        raise ValueError(f"Referenced objects are missing: {sorted(missing)}")
+    stale = []
+    for obj in objects:
+        key = obj["Key"]
+        relative = key[len(prefix):]
+        if (relative not in referenced
+                and (relative.endswith(".rpm") or relative.startswith("repodata/"))):
+            stale.append({"Key": key})
+    for start in range(0, len(stale), 1000):
+        batch = stale[start:start + 1000]
+        response = subprocess.check_output([
+            "aws", "s3api", "delete-objects", "--bucket", location.netloc,
+            "--delete", json.dumps({"Objects": batch, "Quiet": True}), "--output", "json",
+        ])
+        # AWS CLI may print nothing for a successful quiet delete response.
+        result = json.loads(response) if response.strip() else {}
+        if result.get("Errors"):
+            raise RuntimeError(f"Failed to delete repository objects: {result['Errors']}")
+    print(f"Removed {len(stale)} unreferenced objects from {uri}.")
+
+
+def cleanup_tree(uri):
+    """Clean every version/architecture/repository under a published tree."""
+    location = urlsplit(uri)
+    if location.scheme != "s3" or not location.netloc:
+        raise ValueError("Expected an s3:// repository URL")
+    prefix = location.path.strip("/") + "/" if location.path.strip("/") else ""
+    objects = json.loads(subprocess.check_output([
+        "aws", "s3api", "list-objects-v2", "--bucket", location.netloc,
+        "--prefix", prefix, "--output", "json",
+    ])).get("Contents", [])
+    suffix = "/repodata/repomd.xml"
+    for obj in objects:
+        relative = obj["Key"][len(prefix):]
+        if relative.endswith(suffix) and len(relative[:-len(suffix)].split("/")) == 3:
+            repo_uri = f"{uri.rstrip('/')}/{relative[:-len(suffix)]}"
+            with tempfile.TemporaryDirectory() as temp:
+                cleanup_repository(repo_uri, Path(temp))
 
 
 def merge_metadata(new, old, output, revision):
@@ -121,6 +224,11 @@ def main():
     select.add_argument("repository", choices=["common", "firmware"])
     select.add_argument("metadata", type=Path)
     select.add_argument("--force", action="store_true")
+    tree = commands.add_parser("cleanup-tree")
+    tree.add_argument("uri")
+    cleanup = commands.add_parser("cleanup")
+    cleanup.add_argument("uri")
+    cleanup.add_argument("directory", type=Path)
     merge = commands.add_parser("merge")
     merge.add_argument("new", type=Path)
     merge.add_argument("old", type=Path)
@@ -129,6 +237,10 @@ def main():
     args = parser.parse_args()
     if args.command == "fetch":
         fetch_metadata(args.uri, args.directory)
+    elif args.command == "cleanup-tree":
+        cleanup_tree(args.uri)
+    elif args.command == "cleanup":
+        cleanup_repository(args.uri, args.directory)
     elif args.command == "select":
         for package in select_packages(Path.cwd(), args.repository, args.metadata, args.force):
             print(package)
