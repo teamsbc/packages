@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        31
+Release:        32
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -281,6 +281,14 @@ end
 %post -n %{name}-identity-makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 local image_version = os.getenv("IMAGE_VERSION")
+if image_version and image_version ~= "" then
+    local path = rpm.expand("%{_prefix}") .. "/lib/kernel/cmdline"
+    local f = io.open(path, "a")
+    if f then
+        f:write("systemd.image_filter=usr=usr-" .. image_version .. "\n")
+        f:close()
+    end
+end
 if image_id or image_version then
     local path = rpm.expand("%{_prefix}") .. "/lib/os-release"
     local f = io.open(path, "a")
@@ -296,6 +304,9 @@ if image_id or image_version then
 end
 
 %changelog
+* Mon Nov 09 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-32
+- Match the Makalu UKI to the versioned /usr partition.
+
 * Sat Sep 26 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-31
 - Move kernel config (entry-token, tries, install.conf, cmdline) from
   /etc/kernel to /usr/lib/kernel and DNF vendor config to
