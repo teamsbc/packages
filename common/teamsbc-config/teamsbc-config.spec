@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        21
+Release:        22
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -71,6 +71,10 @@ Source56:       30-bpftrace.transfer.makalu
 Source57:       bpftrace.feature.makalu
 Source58:       30-i2c-display.transfer.makalu
 Source59:       i2c-display.feature.makalu
+Source60:       30-podman.transfer.makalu
+Source61:       podman.feature.makalu
+Source62:       30-valkey.transfer.makalu
+Source63:       valkey.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -180,6 +184,10 @@ install -m 644 %{_sourcedir}/30-bpftrace.transfer.makalu %{buildroot}%{_prefix}/
 install -m 644 %{_sourcedir}/bpftrace.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/bpftrace.feature.makalu
 install -m 644 %{_sourcedir}/30-i2c-display.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu
 install -m 644 %{_sourcedir}/i2c-display.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/i2c-display.feature.makalu
+install -m 644 %{_sourcedir}/30-podman.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-podman.transfer.makalu
+install -m 644 %{_sourcedir}/podman.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/podman.feature.makalu
+install -m 644 %{_sourcedir}/30-valkey.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-valkey.transfer.makalu
+install -m 644 %{_sourcedir}/valkey.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/valkey.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
@@ -211,7 +219,9 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-fio.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-tools.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-bpftrace.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-podman.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-valkey.transfer.makalu
 
 %check
 
@@ -282,13 +292,17 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/sysupdate.d/bpftrace.feature.makalu
 %{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu
 %{_prefix}/lib/sysupdate.d/i2c-display.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-podman.transfer.makalu
+%{_prefix}/lib/sysupdate.d/podman.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-valkey.transfer.makalu
+%{_prefix}/lib/sysupdate.d/valkey.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer", "30-lm-sensors.transfer", "30-jq.transfer", "30-tcpdump.transfer", "30-htop.transfer", "30-iperf3.transfer", "30-ethtool.transfer", "30-smartmontools.transfer", "30-nvme-cli.transfer", "30-bind-utils.transfer", "30-ripgrep.transfer", "30-nmap.transfer", "30-fio.transfer", "30-i2c-tools.transfer", "30-bpftrace.transfer", "30-i2c-display.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer", "30-lm-sensors.transfer", "30-jq.transfer", "30-tcpdump.transfer", "30-htop.transfer", "30-iperf3.transfer", "30-ethtool.transfer", "30-smartmontools.transfer", "30-nvme-cli.transfer", "30-bind-utils.transfer", "30-ripgrep.transfer", "30-nmap.transfer", "30-fio.transfer", "30-i2c-tools.transfer", "30-bpftrace.transfer", "30-i2c-display.transfer", "30-podman.transfer", "30-valkey.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -306,16 +320,19 @@ if image_id then
 end
 
 %changelog
-* Wed Nov 04 2026 TeamSBC - %{fedora}-21
+* Mon Nov 09 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-22
+- Add optional Podman and Valkey system extensions for Makalu.
+
+* Wed Nov 04 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-21
 - Add optional Makalu utilities and i2c-display system extensions.
 
-* Tue Nov 03 2026 TeamSBC - %{fedora}-20
+* Tue Nov 03 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-20
 - Rename the lm-sensors sysupdate feature to match its extension image.
 
-* Sat Oct 31 2026 TeamSBC - %{fedora}-19
+* Sat Oct 31 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-19
 - Ship an optional lm_sensors sysupdate feature and transfer for Makalu.
 
-* Sat Oct 31 2026 TeamSBC - %{fedora}-18
+* Sat Oct 31 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-18
 - Ship optional copyparty and HAProxy sysupdate features and transfers for Makalu.
 
 * Thu Oct 29 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-17

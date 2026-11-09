@@ -1,0 +1,4 @@
+[Feature]
+Description=Valkey data store and clients
+Documentation=https://valkey.io/
+Enabled=false
