@@ -51,6 +51,7 @@ jobs:
           fetch-depth: 0
       - name: "Setup"
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           echo "%_topdir %(pwd)" >> ~/.rpmmacros
           {
             echo "OLD=$RUNNER_TEMP/old-repository"
