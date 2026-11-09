@@ -106,7 +106,9 @@ jobs:
           while IFS= read -r DIR; do
             pushd "$DIR"
             BUILDREQS_ADD=$(rpmspec -q --srpm --buildrequires ./*.spec | xargs)
-            BUILDREQS="${BUILDREQS_ADD} ${BUILDREQS}"
+            if [ -n "$BUILDREQS_ADD" ]; then
+              BUILDREQS="${BUILDREQS:+$BUILDREQS }$BUILDREQS_ADD"
+            fi
             popd
           done < "$PACKAGES"
           if [ -n "$BUILDREQS" ]; then
