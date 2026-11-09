@@ -30,16 +30,20 @@ def select_packages(root, repository, metadata, force=False):
     baseline = None
     if metadata.is_file():
         baseline = ET.parse(metadata).findtext(f"{{{REPOMD_NS}}}revision")
+    head = git(root, "rev-parse", "HEAD").strip()
+    print(f"Repository: {repository}; published revision: {baseline!r}; HEAD: {head}",
+          file=sys.stderr)
     if not baseline or not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", baseline):
+        print("Published revision is missing or invalid; rebuilding all packages.", file=sys.stderr)
         return packages
 
     if subprocess.run(
         ["git", "-C", str(root), "cat-file", "-e", f"{baseline}^{{commit}}"],
         check=False, stderr=subprocess.DEVNULL,
     ).returncode != 0:
+        print("Published revision is not available locally; rebuilding all packages.", file=sys.stderr)
         return packages
 
-    head = git(root, "rev-parse", "HEAD").strip()
     if baseline != head and subprocess.run(
         ["git", "-C", str(root), "merge-base", "--is-ancestor", head, baseline],
         check=False,
@@ -47,20 +51,32 @@ def select_packages(root, repository, metadata, force=False):
         print("A newer commit is already published; skipping this older run.", file=sys.stderr)
         return []
     if force:
+        print("Manual rebuild requested; rebuilding all packages.", file=sys.stderr)
         return packages
     if subprocess.run(
         ["git", "-C", str(root), "merge-base", "--is-ancestor", baseline, head],
         check=False,
     ).returncode != 0:
+        print("Published revision is not an ancestor of HEAD; rebuilding all packages.",
+              file=sys.stderr)
         return packages
 
     changed = git(root, "diff", "--name-only", "--no-renames", "-z", baseline, head).split("\0")
-    if any(path == ".github/workflows/build.yml" or path.startswith(".github/scripts/")
-           or path.startswith(f"{repository}/") and len(path.split("/")) == 2
-           for path in changed):
+    shared = [path for path in changed
+              if path == ".github/workflows/build.yml" or path.startswith(".github/scripts/")
+              or path.startswith(f"{repository}/") and len(path.split("/")) == 2]
+    if shared:
+        print(f"Shared build inputs changed; rebuilding all packages: {', '.join(shared)}",
+              file=sys.stderr)
         return packages
-    return [package for package in packages
-            if any(path.startswith(f"{package}/") for path in changed)]
+    selected = [package for package in packages
+                if any(path.startswith(f"{package}/") for path in changed)]
+    for package in selected:
+        paths = [path for path in changed if path.startswith(f"{package}/")]
+        print(f"{package}: changed files: {', '.join(paths)}", file=sys.stderr)
+    if not selected:
+        print("No package inputs changed; nothing to rebuild.", file=sys.stderr)
+    return selected
 
 
 def fetch_metadata(uri, directory):

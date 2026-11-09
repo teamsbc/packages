@@ -1,4 +1,6 @@
 import importlib.util
+import contextlib
+import io
 import json
 from pathlib import Path
 import shutil
@@ -104,6 +106,23 @@ class SelectionTests(unittest.TestCase):
     def test_manual_rebuild_includes_unchanged_packages(self):
         self.assertEqual(self.select(), [])
         self.assertEqual(self.select(force=True), ["common/alpha", "common/beta"])
+
+    def test_selection_diagnostics_identify_baseline_and_reason(self):
+        self.write("common/alpha/source")
+        head = self.commit()
+        log = io.StringIO()
+        with contextlib.redirect_stderr(log):
+            selected = self.select()
+        self.assertEqual(selected, ["common/alpha"])
+        self.assertIn(self.baseline, log.getvalue())
+        self.assertIn(head, log.getvalue())
+        self.assertIn("common/alpha/source", log.getvalue())
+
+        self.metadata.unlink()
+        log = io.StringIO()
+        with contextlib.redirect_stderr(log):
+            self.select()
+        self.assertIn("missing or invalid", log.getvalue())
 
     def test_old_rerun_cannot_replace_a_newer_publication(self):
         self.write("common/alpha/source")
