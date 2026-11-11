@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        33
+Release:        34
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -115,6 +115,9 @@ echo "initrd_generator=dracut" >> %{buildroot}%{_prefix}/lib/kernel/install.conf
 echo "uki_generator=ukify" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
 echo "mount.usr=dissect" > %{buildroot}%{_prefix}/lib/kernel/cmdline.makalu
 
+install -d %{buildroot}%{_prefix}/lib/dracut/dracut.conf.d
+echo 'add_dracutmodules+=" systemd-sysext "' > %{buildroot}%{_prefix}/lib/dracut/dracut.conf.d/20-teamsbc-sysext.conf.makalu
+
 # /etc/os-release
 cat <<EOF >os-release
 NAME="TeamSBC Linux"
@@ -197,6 +200,7 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %{_prefix}/lib/os-release.makalu
 %{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
 %{_prefix}/lib/kernel/cmdline.makalu
+%{_prefix}/lib/dracut/dracut.conf.d/20-teamsbc-sysext.conf.makalu
 
 %post common -p <lua>
 local image_id = os.getenv("IMAGE_ID")
@@ -236,6 +240,9 @@ if image_id or image_version then
 end
 
 %changelog
+* Wed Nov 11 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-34
+- Include the systemd-sysext dracut module in Makalu initrds.
+
 * Wed Nov 11 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-33
 - Drop the Lhotse variant.
 
