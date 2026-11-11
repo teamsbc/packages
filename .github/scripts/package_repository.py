@@ -206,9 +206,9 @@ def cleanup_tree(uri):
                 cleanup_repository(repo_uri, Path(temp))
 
 
-def merge_metadata(new, old, output, revision):
+def merge_metadata(new, old, output, revision, from_scratch=False):
     subprocess.run(["createrepo_c", "--revision", revision, str(new)], check=True)
-    if (old / "repodata/repomd.xml").is_file():
+    if not from_scratch and (old / "repodata/repomd.xml").is_file():
         subprocess.run([
             "mergerepo_c", "--repo", str(new), "--repo", str(old),
             "--method", "repo", "--omit-baseurl", "--no-database",
@@ -250,6 +250,7 @@ def main():
     merge.add_argument("old", type=Path)
     merge.add_argument("output", type=Path)
     merge.add_argument("revision")
+    merge.add_argument("--from-scratch", action="store_true")
     args = parser.parse_args()
     if args.command == "fetch":
         fetch_metadata(args.uri, args.directory)
@@ -261,7 +262,7 @@ def main():
         for package in select_packages(Path.cwd(), args.repository, args.metadata, args.force):
             print(package)
     else:
-        merge_metadata(args.new, args.old, args.output, args.revision)
+        merge_metadata(args.new, args.old, args.output, args.revision, args.from_scratch)
 
 
 if __name__ == "__main__":

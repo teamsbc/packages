@@ -5,6 +5,15 @@
 
 This repository contains the RPM packages for the [TeamSBC Remix](https://teamsbc.org/). The packages are built in GitHub Actions and uploaded to the repositories on merge to `main`.
 
+Manual runs rebuild all eligible packages. To remove packages no longer built
+from the latest repositories, select **Rebuild repositories without retaining
+old packages** when starting a manual run. This creates metadata from the new
+builds only; cleanup removes RPMs no longer referenced by that metadata. Earlier
+dated snapshots retain their existing contents until normal snapshot retention
+removes them; a snapshot for the current day may be refreshed. An existing
+repository with no eligible packages is not emptied by this option: the run
+fails instead.
+
 ## Repositories
 
 Packages end up in a few different repositories.

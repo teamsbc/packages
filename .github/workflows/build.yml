@@ -10,6 +10,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      from_scratch:
+        description: 'Rebuild repositories without retaining old packages'
+        type: boolean
+        default: false
 
 # Keep publication, cleanup, and indexing within one serialized pipeline.
 concurrency:
@@ -71,6 +76,7 @@ jobs:
         id: select
         env:
           FORCE_REBUILD: ${{ github.event_name == 'workflow_dispatch' }}
+          FROM_SCRATCH: ${{ inputs.from_scratch == true }}
         run: |
           OPTIONS=()
           if [ "$FORCE_REBUILD" = true ]; then
@@ -96,6 +102,10 @@ jobs:
             echo "build=true" >> "$GITHUB_OUTPUT"
             cat "$PACKAGES"
           else
+            if [ "$FROM_SCRATCH" = true ] && [ -f "$OLD/repodata/repomd.xml" ]; then
+              echo "Cannot rebuild an existing repository from scratch without eligible packages; refusing to publish an empty repository."
+              exit 1
+            fi
             echo "build=false" >> "$GITHUB_OUTPUT"
             echo "No packages to rebuild."
           fi
@@ -146,13 +156,27 @@ jobs:
           find "./$REPOSITORY" -name '*.rpm' -exec rpmsign --addsign {} +
       - name: "Copy"
         if: steps.select.outputs.build == 'true'
+        env:
+          FROM_SCRATCH: ${{ inputs.from_scratch == true }}
         run: |
-          find "./$REPOSITORY" -name '*.rpm' -exec mv -t "$NEW" {} +
+          DESTINATION="$NEW"
+          if [ "$FROM_SCRATCH" = true ]; then
+            # Avoid overwriting RPMs still referenced by the live metadata.
+            DESTINATION="$NEW/build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            mkdir -p "$DESTINATION"
+          fi
+          find "./$REPOSITORY" -name '*.rpm' -exec mv -t "$DESTINATION" {} +
       - name: "Merge repository metadata"
         if: steps.select.outputs.build == 'true'
+        env:
+          FROM_SCRATCH: ${{ inputs.from_scratch == true }}
         run: |
+          OPTIONS=()
+          if [ "$FROM_SCRATCH" = true ]; then
+            OPTIONS+=(--from-scratch)
+          fi
           python3 .github/scripts/package_repository.py merge \
-            "$NEW" "$OLD" "$MERGED" "$GITHUB_SHA"
+            "$NEW" "$OLD" "$MERGED" "$GITHUB_SHA" "${OPTIONS[@]}"
       - name: "Upload"
         if: steps.select.outputs.build == 'true'
         env:

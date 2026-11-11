@@ -327,6 +327,18 @@ class MergeTests(unittest.TestCase):
                     self.assertEqual(manifest.findtext(f"{{{repository.REPOMD_NS}}}revision"), revision)
                     self.assertEqual(set(self.load(output)), {"unchanged"} if existing else set())
 
+    def test_from_scratch_excludes_old_repository_packages(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            old, new, output = root / "old", root / "new", root / "output"
+            self.fixture(old, [("removed", "1")])
+            new.mkdir()
+            revision = "b" * 40
+            repository.merge_metadata(new, old, output, revision, from_scratch=True)
+            self.assertEqual(self.load(output), {})
+            manifest = ET.parse(output / "repodata/repomd.xml")
+            self.assertEqual(manifest.findtext(f"{{{repository.REPOMD_NS}}}revision"), revision)
+
 
 if __name__ == "__main__":
     unittest.main()
