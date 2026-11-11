@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        32
+Release:        33
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -58,40 +58,6 @@ Conflicts: teamsbc-release-identity
 Provides the necessary files for a TeamSBC installation that is
 not identifying itself as a particular variant.
 
-%package lhotse
-Summary:    Base package for TeamSBC Lhotse-specific default configurations
-
-RemovePathPostfixes: .lhotse
-
-Provides:  teamsbc-release = %{version}-%{release}
-Provides:  teamsbc-release-variant = %{version}-%{release}
-Provides:  system-release
-Provides:  system-release(%{version})
-Conflicts: fedora-release
-Conflicts: fedora-release-identity
-Requires:  teamsbc-release-common
-
-# We configure DNF so the location must exist
-Requires:  libdnf5
-
-Recommends: teamsbc-release-identity-lhotse
-
-%description lhotse
-Provides a base package for TeamSBC Lhotse-specific
-configuration files to depend on as well as Lhotse system defaults.
-
-%package identity-lhotse
-Summary:    Package providing the identity for TeamSBC Lhotse variant
-
-RemovePathPostfixes: .lhotse
-Provides:       teamsbc-release-identity = %{version}-%{release}
-Conflicts:      teamsbc-release-identity
-Requires(meta): teamsbc-release-lhotse = %{version}-%{release}
-
-%description identity-lhotse
-Provides the necessary files for a TeamSBC installation that is identifying
-itself as TeamSBC Lhotse.
-
 %package makalu
 Summary:    Base package for TeamSBC Makalu-specific default configurations
 
@@ -143,10 +109,6 @@ install -d %{buildroot}%{_sysconfdir}/kernel
 echo "3" > %{buildroot}%{_sysconfdir}/kernel/tries
 
 install -d %{buildroot}%{_prefix}/lib/kernel/install.conf.d
-echo "layout=bls" > %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
-echo "entry_name_format=%%M_%%v" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
-echo "" > %{buildroot}%{_prefix}/lib/kernel/cmdline.lhotse
-
 echo "layout=uki" > %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
 echo "entry_name_format=%%M_%%A" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
 echo "initrd_generator=dracut" >> %{buildroot}%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.makalu
@@ -187,12 +149,6 @@ cp -p os-release \
       %{buildroot}%{_prefix}/lib/os-release.basic
 
 cp -p os-release \
-      %{buildroot}%{_prefix}/lib/os-release.lhotse
-echo "VARIANT=\"Lhotse\"" >> %{buildroot}%{_prefix}/lib/os-release.lhotse
-echo "VARIANT_ID=\"teamsbc-lhotse\"" >> %{buildroot}%{_prefix}/lib/os-release.lhotse
-sed -i -e "s|(%{variant_name})|(Lhotse)|g" %{buildroot}%{_prefix}/lib/os-release.lhotse
-
-cp -p os-release \
       %{buildroot}%{_prefix}/lib/os-release.makalu
 echo "VARIANT=\"Makalu\"" >> %{buildroot}%{_prefix}/lib/os-release.makalu
 echo "VARIANT_ID=\"teamsbc-makalu\"" >> %{buildroot}%{_prefix}/lib/os-release.makalu
@@ -205,12 +161,6 @@ cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
 %%fedora    %{dist_version}
 %%dist      %%{?distprefix}.fc%{dist_version}%%{?with_bootstrap:~bootstrap}
 %%fc%{dist_version}     1
-EOF
-
-install -d -m 755 %{buildroot}%{_datadir}/dnf5/libdnf.conf.d
-cat >> %{buildroot}%{_datadir}/dnf5/libdnf.conf.d/20-exclude-bcm283x.conf << EOF
-[main]
-exclude=bcm283x-firmware
 EOF
 
 # default systemd presets
@@ -242,13 +192,6 @@ install -Dm0644 %{SOURCE11} -t %{buildroot}%{_prefix}/lib/systemd/system-preset/
 %files identity-basic
 %{_prefix}/lib/os-release.basic
 
-%files lhotse
-%files identity-lhotse
-%{_prefix}/lib/os-release.lhotse
-%{_prefix}/lib/kernel/install.conf.d/20-teamsbc.conf.lhotse
-%{_prefix}/lib/kernel/cmdline.lhotse
-%{_datadir}/dnf5/libdnf.conf.d/20-exclude-bcm283x.conf
-
 %files makalu
 %files identity-makalu
 %{_prefix}/lib/os-release.makalu
@@ -265,17 +208,6 @@ local f = io.open(path, "w")
 if f then
     f:write(image_id .. "\n")
     f:close()
-end
-
-%post -n %{name}-identity-lhotse -p <lua>
-local image_id = os.getenv("IMAGE_ID")
-if image_id then
-    local path = rpm.expand("%{_prefix}") .. "/lib/os-release"
-    local f = io.open(path, "a")
-    if f then
-        f:write('IMAGE_ID="' .. image_id .. '"\n')
-        f:close()
-    end
 end
 
 %post -n %{name}-identity-makalu -p <lua>
@@ -304,6 +236,9 @@ if image_id or image_version then
 end
 
 %changelog
+* Wed Nov 11 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-33
+- Drop the Lhotse variant.
+
 * Mon Nov 09 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-32
 - Match the Makalu UKI to the versioned /usr partition.
 

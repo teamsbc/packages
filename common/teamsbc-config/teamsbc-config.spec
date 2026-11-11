@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        22
+Release:        23
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -10,9 +10,6 @@ BuildRequires:  gnupg2
 
 Provides:       teamsbc-config(%{version}) = %{release}
 Requires:       system-release(%{version})
-
-Source1:        00-esp.conf.lhotse
-Source2:        50-root.conf.lhotse
 
 Source3:        00-esp.conf.makalu
 Source4:        30-usr.conf.makalu
@@ -87,19 +84,6 @@ Summary: Fedora TeamSBC Remix common configs.
 %description common
 Configuration files shared across all TeamSBC variants.
 
-%package lhotse
-Summary: Fedora TeamSBC Remix Lhotse variant configs.
-
-RemovePathPostfixes: .lhotse
-
-Provides:  teamsbc-config = %{version}-%{release}
-Conflicts: teamsbc-config
-
-Requires: teamsbc-config-common
-
-%description lhotse
-Configuration files specific to the Lhotse TeamSBC variant.
-
 %package makalu
 Summary: Fedora TeamSBC Remix Makalu variant configs.
 
@@ -122,9 +106,6 @@ Configuration files specific to the Makalu TeamSBC variant.
 
 %install
 install -d %{buildroot}%{_prefix}/lib/repart.d
-
-install -m 644 %{_sourcedir}/00-esp.conf.lhotse %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.lhotse
-install -m 644 %{_sourcedir}/50-root.conf.lhotse %{buildroot}%{_prefix}/lib/repart.d/50-root.conf.lhotse
 
 install -m 644 %{_sourcedir}/00-esp.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/00-esp.conf.makalu
 install -m 644 %{_sourcedir}/30-usr.conf.makalu %{buildroot}%{_prefix}/lib/repart.d/30-usr.conf.makalu
@@ -228,10 +209,6 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %files common
 %dir %{_prefix}/lib/repart.d
 
-%files lhotse
-%{_prefix}/lib/repart.d/00-esp.conf.lhotse
-%{_prefix}/lib/repart.d/50-root.conf.lhotse
-
 %files makalu
 %dir %{_prefix}/lib/sysupdate.d
 
@@ -320,6 +297,9 @@ if image_id then
 end
 
 %changelog
+* Wed Nov 11 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-23
+- Drop the Lhotse variant.
+
 * Mon Nov 09 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-22
 - Add optional Podman and Valkey system extensions for Makalu.
 
