@@ -3,7 +3,7 @@
 
 Name:           teamsbc-release
 Version:        %{dist_version}
-Release:        34
+Release:        35
 Summary:        TeamSBC release files
 
 License:        MIT
@@ -40,7 +40,6 @@ Suggests: teamsbc-release
 
 Requires: teamsbc-release-identity = %{version}-%{release}
 Requires: fedora-repos(%{version})
-Requires: teamsbc-repos-common
 
 Conflicts: fedora-release-common
 
@@ -240,6 +239,9 @@ if image_id or image_version then
 end
 
 %changelog
+* Wed Nov 11 2026 TeamSBC - %{fedora}-35
+- Drop the dependency on TeamSBC repository configuration.
+
 * Wed Nov 11 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-34
 - Include the systemd-sysext dracut module in Makalu initrds.
 

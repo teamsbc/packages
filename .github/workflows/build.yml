@@ -238,7 +238,7 @@ jobs:
           aws s3 cp --recursive "$LATEST" "$DATED" \
             --exclude "*" --include "*/repomd.xml" \
             --metadata-directive COPY --no-progress
-          aws s3 cp common/teamsbc-repos/RPM-GPG-KEY-teamsbc \
+          aws s3 cp common/teamsbc-config/RPM-GPG-KEY-teamsbc \
             "s3://teamsbc-packages/RPM-GPG-KEY-teamsbc" --no-progress
 
   cleanup:
