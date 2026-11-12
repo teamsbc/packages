@@ -50,6 +50,15 @@ allow systemd_importd_t sysctl_net_t:dir search;
 allow systemd_importd_t sysctl_net_t:file { getattr open read };
 allow systemd_importd_t tmpfs_t:file { read write };
 
+# homed checks shared-memory object ownership when allocating a UID. It must
+# be able to inspect tmpfs files owned by other services during that scan.
+require {
+	type systemd_homed_t;
+	class file getattr;
+}
+
+allow systemd_homed_t tmpfs_t:file getattr;
+
 # Allow systemd-importd (systemd-pull) to access fixed-disk block devices
 # for partition-based updates.
 require {
