@@ -5,6 +5,9 @@ on:
     paths:
       - common/**
       - firmware/**
+      - virt/**
+      - rpi4/**
+      - rpi5/**
       - .github/workflows/build.yml
       - .github/scripts/**
     branches:
@@ -34,15 +37,23 @@ jobs:
         repository:
           - common
           - firmware
+          - virt
+          - rpi4
+          - rpi5
         build:
           - distro: fedora
             version: 46
             arch: x86_64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
           - distro: fedora
             version: 46
             arch: aarch64
             runner: ubuntu-24.04-arm
+        exclude:
+          - repository: rpi4
+            build: { distro: fedora, version: 46, arch: x86_64, runner: ubuntu-24.04 }
+          - repository: rpi5
+            build: { distro: fedora, version: 46, arch: x86_64, runner: ubuntu-24.04 }
     runs-on: ${{ matrix.build.runner }}
     container:
       image: ghcr.io/teamsbc/ci-packages:${{ matrix.build.distro }}-${{ matrix.build.version }}
@@ -87,8 +98,18 @@ jobs:
             > "$RUNNER_TEMP/candidates.txt"
           : > "$PACKAGES"
           while IFS= read -r DIR; do
+            if [ -f "$DIR/prepare" ]; then
+              PREPARED="$RUNNER_TEMP/prepared/$DIR"
+              mkdir -p "$PREPARED"
+              bash "$DIR/prepare" "$PREPARED"
+              DIR="$PREPARED"
+            fi
             pushd "$DIR"
-            EXCL_ARCH=$(rpmspec -q --srpm --qf '%{exclusivearch}' ./*.spec)
+            OPTIONS=()
+            if [ -f .build-args ]; then mapfile -t OPTIONS < .build-args; fi
+            SPECS=(./*.spec)
+            if [ -f .prepared ]; then SPECS=(SPECS/*.spec); fi
+            EXCL_ARCH=$(rpmspec "${OPTIONS[@]}" -q --srpm --qf '[%{exclusivearch} ]' "${SPECS[@]}")
             popd
             if [ -n "$EXCL_ARCH" ] && [ "$EXCL_ARCH" != "(none)" ]; then
               case " $EXCL_ARCH " in
@@ -112,23 +133,27 @@ jobs:
       - name: "Build Requirements"
         if: steps.select.outputs.build == 'true'
         run: |
-          BUILDREQS=""
+          bash .github/scripts/install-build-requirements.sh "$PACKAGES"
+      - name: "Check kernel HMAC support"
+        if: steps.select.outputs.build == 'true' && contains(fromJSON('["virt", "rpi4", "rpi5"]'), matrix.repository)
+        run: |
           while IFS= read -r DIR; do
-            pushd "$DIR"
-            BUILDREQS_ADD=$(rpmspec -q --srpm --buildrequires ./*.spec | xargs)
-            if [ -n "$BUILDREQS_ADD" ]; then
-              BUILDREQS="${BUILDREQS:+$BUILDREQS }$BUILDREQS_ADD"
+            if [ "$DIR" = "$RUNNER_TEMP/prepared/$REPOSITORY/kernel" ]; then
+              sha512hmac "$(command -v sha512hmac)" > /dev/null
             fi
-            popd
           done < "$PACKAGES"
-          if [ -n "$BUILDREQS" ]; then
-            dnf install -y $BUILDREQS
-          fi
       - name: "Build"
         if: steps.select.outputs.build == 'true'
         run: |
           while IFS= read -r DIR; do
             pushd "$DIR"
+            if [ -f .prepared ]; then
+              OPTIONS=()
+              if [ -f .build-args ]; then mapfile -t OPTIONS < .build-args; fi
+              rpmbuild "${OPTIONS[@]}" -ba SPECS/*.spec
+              popd
+              continue
+            fi
             mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
             find . -maxdepth 1 -type f -exec cp -v {} SOURCES/ \;
             # RPM resolves Source/Patch entries by basename. Packages may keep
@@ -153,7 +178,7 @@ jobs:
       - name: "Sign"
         if: steps.select.outputs.build == 'true'
         run: |
-          find "./$REPOSITORY" -name '*.rpm' -exec rpmsign --addsign {} +
+          while IFS= read -r DIR; do find "$DIR" -name '*.rpm' -exec rpmsign --addsign {} +; done < "$PACKAGES"
       - name: "Copy"
         if: steps.select.outputs.build == 'true'
         env:
@@ -165,7 +190,7 @@ jobs:
             DESTINATION="$NEW/build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
             mkdir -p "$DESTINATION"
           fi
-          find "./$REPOSITORY" -name '*.rpm' -exec mv -t "$DESTINATION" {} +
+          while IFS= read -r DIR; do find "$DIR" -name '*.rpm' -exec mv -t "$DESTINATION" {} +; done < "$PACKAGES"
       - name: "Merge repository metadata"
         if: steps.select.outputs.build == 'true'
         env:

@@ -25,8 +25,9 @@ def git(root, *args):
 
 
 def select_packages(root, repository, metadata, force=False):
-    packages = sorted({str(spec.parent.relative_to(root))
-                       for spec in (root / repository).glob("*/*.spec")})
+    packages = sorted({str(path.parent.relative_to(root))
+                       for pattern in ("*/*.spec", "*/prepare")
+                       for path in (root / repository).glob(pattern)})
     baseline = None
     if metadata.is_file():
         baseline = ET.parse(metadata).findtext(f"{{{REPOMD_NS}}}revision")
@@ -64,6 +65,7 @@ def select_packages(root, repository, metadata, force=False):
     changed = git(root, "diff", "--name-only", "--no-renames", "-z", baseline, head).split("\0")
     shared = [path for path in changed
               if path == ".github/workflows/build.yml" or path.startswith(".github/scripts/")
+              or repository in ("rpi4", "rpi5") and path.startswith("virt/kernel/")
               or path.startswith(f"{repository}/") and len(path.split("/")) == 2]
     if shared:
         print(f"Shared build inputs changed; rebuilding all packages: {', '.join(shared)}",
@@ -237,7 +239,7 @@ def main():
     fetch.add_argument("uri")
     fetch.add_argument("directory", type=Path)
     select = commands.add_parser("select")
-    select.add_argument("repository", choices=["common", "firmware"])
+    select.add_argument("repository", choices=["common", "firmware", "virt", "rpi4", "rpi5"])
     select.add_argument("metadata", type=Path)
     select.add_argument("--force", action="store_true")
     tree = commands.add_parser("cleanup-tree")

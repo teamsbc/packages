@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SOURCE_DIR=$(cd "$(dirname "$0")" && pwd)
+BUILD_DIR=$(cd "$1" && pwd)
+VARIANT=${2:-virt}
+case "$VARIANT" in
+  virt|rpi4|rpi5) ;;
+  *) echo "Unknown kernel variant: $VARIANT" >&2; exit 1 ;;
+esac
+source "$SOURCE_DIR/source.env"
+SRPM="$BUILD_DIR/source.rpm"
+
+curl --fail --location --retry 3 --output "$SRPM" "$SRPM_URL"
+echo "$SRPM_SHA256  $SRPM" | sha256sum --check
+rpm --install --nodeps --define "_topdir $BUILD_DIR" "$SRPM"
+rm "$SRPM"
+
+# Use Fedora's configuration unchanged until a TeamSBC override is selected.
+# Apply the same switches when querying build requirements and building RPMs.
+cat > "$BUILD_DIR/.build-args" <<EOF
+--with
+baseonly
+--without
+debuginfo
+--without
+efiuki
+--define
+buildid .teamsbc.$VARIANT
+EOF
+touch "$BUILD_DIR/.prepared"

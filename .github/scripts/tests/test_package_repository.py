@@ -2,6 +2,7 @@ import importlib.util
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,6 +17,30 @@ spec = importlib.util.spec_from_file_location(
 )
 repository = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(repository)
+
+
+class BuildRequirementsTests(unittest.TestCase):
+    def test_versioned_requirements_are_single_dnf_arguments(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "SPECS").mkdir()
+            (root / ".prepared").touch()
+            (root / "SPECS/kernel.spec").touch()
+            (root / "packages").write_text(str(root) + "\n")
+            for name, body in {
+                "rpmspec": "printf '%s\\n' bash 'systemd-udev >= 252-1'\n",
+                "dnf": "printf '%s\\n' \"$@\" > \"$RESULT\"\n",
+            }.items():
+                path = root / name
+                path.write_text("#!/bin/sh\n" + body)
+                path.chmod(0o755)
+            env = dict(os.environ, PATH=f"{root}:{os.environ['PATH']}",
+                       RESULT=str(root / "result"))
+            script = Path(__file__).parents[1] / "install-build-requirements.sh"
+            subprocess.run(["bash", str(script), str(root / "packages")],
+                           env=env, check=True)
+            self.assertEqual((root / "result").read_text().splitlines(),
+                             ["install", "-y", "bash", "systemd-udev >= 252-1"])
 
 try:
     import createrepo_c as cr
@@ -106,6 +131,26 @@ class SelectionTests(unittest.TestCase):
     def test_manual_rebuild_includes_unchanged_packages(self):
         self.assertEqual(self.select(), [])
         self.assertEqual(self.select(force=True), ["common/alpha", "common/beta"])
+
+    def test_prepared_package_is_selected_when_pin_changes(self):
+        self.write("virt/kernel/prepare", "#!/bin/sh\n")
+        self.write("virt/kernel/source.env", "initial\n")
+        self.record(self.commit())
+        self.assertEqual(self.select("virt"), [])
+        self.write("virt/kernel/source.env", "updated\n")
+        self.commit()
+        self.assertEqual(self.select("virt"), ["virt/kernel"])
+
+    def test_shared_kernel_inputs_rebuild_pi_repositories(self):
+        for name in ("virt", "rpi4", "rpi5"):
+            self.write(f"{name}/kernel/prepare", "#!/bin/sh\n")
+        self.write("virt/kernel/source.env", "initial\n")
+        self.record(self.commit())
+        self.write("virt/kernel/source.env", "updated\n")
+        self.commit()
+        for name in ("virt", "rpi4", "rpi5"):
+            with self.subTest(repository=name):
+                self.assertEqual(self.select(name), [f"{name}/kernel"])
 
     def test_selection_diagnostics_identify_baseline_and_reason(self):
         self.write("common/alpha/source")
