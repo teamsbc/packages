@@ -3,11 +3,6 @@ set -euo pipefail
 
 SOURCE_DIR=$(cd "$(dirname "$0")" && pwd)
 BUILD_DIR=$(cd "$1" && pwd)
-VARIANT=${2:-virt}
-case "$VARIANT" in
-  virt|rpi4|rpi5) ;;
-  *) echo "Unknown kernel variant: $VARIANT" >&2; exit 1 ;;
-esac
 source "$SOURCE_DIR/source.env"
 SRPM="$BUILD_DIR/source.rpm"
 
@@ -26,6 +21,6 @@ debuginfo
 --without
 efiuki
 --define
-buildid .teamsbc.$VARIANT
+buildid .teamsbc.virt
 EOF
 touch "$BUILD_DIR/.prepared"

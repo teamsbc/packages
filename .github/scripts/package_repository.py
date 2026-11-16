@@ -65,7 +65,6 @@ def select_packages(root, repository, metadata, force=False):
     changed = git(root, "diff", "--name-only", "--no-renames", "-z", baseline, head).split("\0")
     shared = [path for path in changed
               if path == ".github/workflows/build.yml" or path.startswith(".github/scripts/")
-              or repository in ("rpi4", "rpi5") and path.startswith("virt/kernel/")
               or path.startswith(f"{repository}/") and len(path.split("/")) == 2]
     if shared:
         print(f"Shared build inputs changed; rebuilding all packages: {', '.join(shared)}",

@@ -18,6 +18,10 @@ on:
         description: 'Rebuild repositories without retaining old packages'
         type: boolean
         default: false
+      changed_only:
+        description: 'Build only packages changed since publication'
+        type: boolean
+        default: false
 
 # Keep publication, cleanup, and indexing within one serialized pipeline.
 concurrency:
@@ -86,7 +90,7 @@ jobs:
       - name: "Select packages"
         id: select
         env:
-          FORCE_REBUILD: ${{ github.event_name == 'workflow_dispatch' }}
+          FORCE_REBUILD: ${{ github.event_name == 'workflow_dispatch' && (inputs.changed_only != true || inputs.from_scratch == true) }}
           FROM_SCRATCH: ${{ inputs.from_scratch == true }}
         run: |
           OPTIONS=()

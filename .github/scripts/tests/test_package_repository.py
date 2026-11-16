@@ -141,16 +141,18 @@ class SelectionTests(unittest.TestCase):
         self.commit()
         self.assertEqual(self.select("virt"), ["virt/kernel"])
 
-    def test_shared_kernel_inputs_rebuild_pi_repositories(self):
+    def test_kernel_inputs_select_only_their_own_repository(self):
         for name in ("virt", "rpi4", "rpi5"):
             self.write(f"{name}/kernel/prepare", "#!/bin/sh\n")
-        self.write("virt/kernel/source.env", "initial\n")
+            self.write(f"{name}/kernel/source.env", "initial\n")
         self.record(self.commit())
-        self.write("virt/kernel/source.env", "updated\n")
-        self.commit()
-        for name in ("virt", "rpi4", "rpi5"):
-            with self.subTest(repository=name):
-                self.assertEqual(self.select(name), [f"{name}/kernel"])
+        for changed in ("virt", "rpi4", "rpi5"):
+            self.write(f"{changed}/kernel/source.env", "updated\n")
+            self.commit()
+            for name in ("virt", "rpi4", "rpi5"):
+                with self.subTest(changed=changed, repository=name):
+                    self.assertEqual(self.select(name), [f"{name}/kernel"] if name == changed else [])
+            self.record(self.git("rev-parse", "HEAD"))
 
     def test_selection_diagnostics_identify_baseline_and_reason(self):
         self.write("common/alpha/source")
