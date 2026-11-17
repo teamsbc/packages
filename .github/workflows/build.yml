@@ -5,9 +5,6 @@ on:
     paths:
       - common/**
       - firmware/**
-      - virt/**
-      - rpi4/**
-      - rpi5/**
       - .github/workflows/build.yml
       - .github/scripts/**
     branches:
@@ -16,10 +13,6 @@ on:
     inputs:
       from_scratch:
         description: 'Rebuild repositories without retaining old packages'
-        type: boolean
-        default: false
-      changed_only:
-        description: 'Build only packages changed since publication'
         type: boolean
         default: false
 
@@ -45,23 +38,15 @@ jobs:
         repository:
           - common
           - firmware
-          - virt
-          - rpi4
-          - rpi5
         build:
           - distro: fedora
             version: 46
             arch: x86_64
-            runner: ubuntu-24.04
+            runner: ubuntu-latest
           - distro: fedora
             version: 46
             arch: aarch64
             runner: ubuntu-24.04-arm
-        exclude:
-          - repository: rpi4
-            build: { distro: fedora, version: 46, arch: x86_64, runner: ubuntu-24.04 }
-          - repository: rpi5
-            build: { distro: fedora, version: 46, arch: x86_64, runner: ubuntu-24.04 }
     runs-on: ${{ matrix.build.runner }}
     container:
       image: ghcr.io/teamsbc/ci-packages:${{ matrix.build.distro }}-${{ matrix.build.version }}
@@ -94,7 +79,7 @@ jobs:
       - name: "Select packages"
         id: select
         env:
-          FORCE_REBUILD: ${{ github.event_name == 'workflow_dispatch' && (inputs.changed_only != true || inputs.from_scratch == true) }}
+          FORCE_REBUILD: ${{ github.event_name == 'workflow_dispatch' }}
           FROM_SCRATCH: ${{ inputs.from_scratch == true }}
         run: |
           OPTIONS=()
@@ -106,18 +91,8 @@ jobs:
             > "$RUNNER_TEMP/candidates.txt"
           : > "$PACKAGES"
           while IFS= read -r DIR; do
-            if [ -f "$DIR/prepare" ]; then
-              PREPARED="$RUNNER_TEMP/prepared/$DIR"
-              mkdir -p "$PREPARED"
-              bash "$DIR/prepare" "$PREPARED"
-              DIR="$PREPARED"
-            fi
             pushd "$DIR"
-            OPTIONS=()
-            if [ -f .build-args ]; then mapfile -t OPTIONS < .build-args; fi
-            SPECS=(./*.spec)
-            if [ -f .prepared ]; then SPECS=(SPECS/*.spec); fi
-            EXCL_ARCH=$(rpmspec "${OPTIONS[@]}" -q --srpm --qf '[%{exclusivearch} ]' "${SPECS[@]}")
+            EXCL_ARCH=$(rpmspec -q --srpm --qf '%{exclusivearch}' ./*.spec)
             popd
             if [ -n "$EXCL_ARCH" ] && [ "$EXCL_ARCH" != "(none)" ]; then
               case " $EXCL_ARCH " in
@@ -141,27 +116,23 @@ jobs:
       - name: "Build Requirements"
         if: steps.select.outputs.build == 'true'
         run: |
-          bash .github/scripts/install-build-requirements.sh "$PACKAGES"
-      - name: "Check kernel HMAC support"
-        if: steps.select.outputs.build == 'true' && contains(fromJSON('["virt", "rpi4", "rpi5"]'), matrix.repository)
-        run: |
+          BUILDREQS=""
           while IFS= read -r DIR; do
-            if [ "$DIR" = "$RUNNER_TEMP/prepared/$REPOSITORY/kernel" ]; then
-              sha512hmac "$(command -v sha512hmac)" > /dev/null
+            pushd "$DIR"
+            BUILDREQS_ADD=$(rpmspec -q --srpm --buildrequires ./*.spec | xargs)
+            if [ -n "$BUILDREQS_ADD" ]; then
+              BUILDREQS="${BUILDREQS:+$BUILDREQS }$BUILDREQS_ADD"
             fi
+            popd
           done < "$PACKAGES"
+          if [ -n "$BUILDREQS" ]; then
+            dnf install -y $BUILDREQS
+          fi
       - name: "Build"
         if: steps.select.outputs.build == 'true'
         run: |
           while IFS= read -r DIR; do
             pushd "$DIR"
-            if [ -f .prepared ]; then
-              OPTIONS=()
-              if [ -f .build-args ]; then mapfile -t OPTIONS < .build-args; fi
-              rpmbuild "${OPTIONS[@]}" -ba SPECS/*.spec
-              popd
-              continue
-            fi
             mkdir -p {BUILD,BUILDROOT,RPMS,SRPMS,SPECS,SOURCES}
             find . -maxdepth 1 -type f -exec cp -v {} SOURCES/ \;
             # RPM resolves Source/Patch entries by basename. Packages may keep
@@ -186,7 +157,7 @@ jobs:
       - name: "Sign"
         if: steps.select.outputs.build == 'true'
         run: |
-          while IFS= read -r DIR; do find "$DIR" -name '*.rpm' -exec rpmsign --addsign {} +; done < "$PACKAGES"
+          find "./$REPOSITORY" -name '*.rpm' -exec rpmsign --addsign {} +
       - name: "Copy"
         if: steps.select.outputs.build == 'true'
         env:
@@ -198,7 +169,7 @@ jobs:
             DESTINATION="$NEW/build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
             mkdir -p "$DESTINATION"
           fi
-          while IFS= read -r DIR; do find "$DIR" -name '*.rpm' -exec mv -t "$DESTINATION" {} +; done < "$PACKAGES"
+          find "./$REPOSITORY" -name '*.rpm' -exec mv -t "$DESTINATION" {} +
       - name: "Merge repository metadata"
         if: steps.select.outputs.build == 'true'
         env:

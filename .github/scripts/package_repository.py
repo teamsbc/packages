@@ -25,9 +25,8 @@ def git(root, *args):
 
 
 def select_packages(root, repository, metadata, force=False):
-    packages = sorted({str(path.parent.relative_to(root))
-                       for pattern in ("*/*.spec", "*/prepare")
-                       for path in (root / repository).glob(pattern)})
+    packages = sorted({str(spec.parent.relative_to(root))
+                       for spec in (root / repository).glob("*/*.spec")})
     baseline = None
     if metadata.is_file():
         baseline = ET.parse(metadata).findtext(f"{{{REPOMD_NS}}}revision")
@@ -238,7 +237,7 @@ def main():
     fetch.add_argument("uri")
     fetch.add_argument("directory", type=Path)
     select = commands.add_parser("select")
-    select.add_argument("repository", choices=["common", "firmware", "virt", "rpi4", "rpi5"])
+    select.add_argument("repository", choices=["common", "firmware"])
     select.add_argument("metadata", type=Path)
     select.add_argument("--force", action="store_true")
     tree = commands.add_parser("cleanup-tree")
