@@ -1,0 +1,4 @@
+[Feature]
+Description=Cockpit web-based system administration
+Documentation=https://cockpit-project.org/
+Enabled=false
