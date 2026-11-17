@@ -32,6 +32,10 @@ defaults:
   run:
     shell: bash
 
+env:
+  AWS_REGION: auto
+  AWS_DEFAULT_REGION: auto
+
 jobs:
   build-rpms:
     name: Build RPMs
