@@ -65,7 +65,7 @@ class KernelSourceTests(unittest.TestCase):
     def test_each_prepare_reads_its_own_pin(self):
         bindir = self.root / 'bin'
         bindir.mkdir()
-        for name, script in {'curl': 'while [ "$1" != --output ]; do shift; done; printf data > "$2"', 'rpm': 'exit 0'}.items():
+        for name, script in {'curl': 'while [ "$1" != --output ]; do shift; done; printf data > "$2"', 'rpm': 'while [ "$1" != --define ]; do shift; done; mkdir -p "${2#_topdir }/SOURCES"'}.items():
             executable = bindir / name
             executable.write_text('#!/bin/sh\n' + script + '\n')
             executable.chmod(0o755)
@@ -78,6 +78,8 @@ class KernelSourceTests(unittest.TestCase):
                 build.mkdir()
                 subprocess.run(['bash', str(directory / 'prepare'), str(build)], check=True, env=dict(os.environ, PATH=f'{bindir}:{os.environ["PATH"]}'), capture_output=True)
                 self.assertIn(f'buildid .teamsbc.{variant}\n', (build / '.build-args').read_text())
+                self.assertIn('# CONFIG_SECURITY_SELINUX is not set\n', (build / 'SOURCES/kernel-local').read_text())
+                self.assertIn('CONFIG_NETWORK_SECMARK=y\n', (build / 'SOURCES/kernel-local').read_text())
                 self.assertTrue((build / '.prepared').exists())
 
 

@@ -11,7 +11,14 @@ echo "$SRPM_SHA256  $SRPM" | sha256sum --check
 rpm --install --nodeps --define "_topdir $BUILD_DIR" "$SRPM"
 rm "$SRPM"
 
-# Use Fedora's configuration unchanged until a TeamSBC override is selected.
+# Fedora merges kernel-local into each kernel configuration.
+cat > "$BUILD_DIR/SOURCES/kernel-local" <<'EOF'
+# CONFIG_SECURITY_SELINUX is not set
+CONFIG_NETWORK_SECMARK=y
+# CONFIG_DEFAULT_SECURITY_SELINUX is not set
+CONFIG_DEFAULT_SECURITY_DAC=y
+EOF
+
 # Apply the same switches when querying build requirements and building RPMs.
 cat > "$BUILD_DIR/.build-args" <<EOF
 --with
