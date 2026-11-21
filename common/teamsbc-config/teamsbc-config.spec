@@ -2,7 +2,7 @@
 
 Name:           teamsbc-config
 Version:        %{dist_version}
-Release:        24
+Release:        25
 Summary:        Fedora TeamSBC Remix package repositories
 
 License:        MIT
@@ -74,6 +74,22 @@ Source62:       30-valkey.transfer.makalu
 Source63:       valkey.feature.makalu
 Source64:       30-cockpit.transfer.makalu
 Source65:       cockpit.feature.makalu
+Source66:       30-tar.transfer.makalu
+Source67:       tar.feature.makalu
+Source68:       30-rsync.transfer.makalu
+Source69:       rsync.feature.makalu
+Source70:       30-zip.transfer.makalu
+Source71:       zip.feature.makalu
+Source72:       30-unzip.transfer.makalu
+Source73:       unzip.feature.makalu
+Source74:       30-file.transfer.makalu
+Source75:       file.feature.makalu
+Source76:       30-mtr.transfer.makalu
+Source77:       mtr.feature.makalu
+Source78:       30-tree.transfer.makalu
+Source79:       tree.feature.makalu
+Source80:       30-pv.transfer.makalu
+Source81:       pv.feature.makalu
 
 Requires:       teamsbc-config-common = %{version}-%{release}
 
@@ -173,6 +189,22 @@ install -m 644 %{_sourcedir}/30-valkey.transfer.makalu %{buildroot}%{_prefix}/li
 install -m 644 %{_sourcedir}/valkey.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/valkey.feature.makalu
 install -m 644 %{_sourcedir}/30-cockpit.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-cockpit.transfer.makalu
 install -m 644 %{_sourcedir}/cockpit.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/cockpit.feature.makalu
+install -m 644 %{_sourcedir}/30-tar.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-tar.transfer.makalu
+install -m 644 %{_sourcedir}/tar.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/tar.feature.makalu
+install -m 644 %{_sourcedir}/30-rsync.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-rsync.transfer.makalu
+install -m 644 %{_sourcedir}/rsync.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/rsync.feature.makalu
+install -m 644 %{_sourcedir}/30-zip.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-zip.transfer.makalu
+install -m 644 %{_sourcedir}/zip.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/zip.feature.makalu
+install -m 644 %{_sourcedir}/30-unzip.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-unzip.transfer.makalu
+install -m 644 %{_sourcedir}/unzip.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/unzip.feature.makalu
+install -m 644 %{_sourcedir}/30-file.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-file.transfer.makalu
+install -m 644 %{_sourcedir}/file.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/file.feature.makalu
+install -m 644 %{_sourcedir}/30-mtr.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-mtr.transfer.makalu
+install -m 644 %{_sourcedir}/mtr.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/mtr.feature.makalu
+install -m 644 %{_sourcedir}/30-tree.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-tree.transfer.makalu
+install -m 644 %{_sourcedir}/tree.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/tree.feature.makalu
+install -m 644 %{_sourcedir}/30-pv.transfer.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/30-pv.transfer.makalu
+install -m 644 %{_sourcedir}/pv.feature.makalu %{buildroot}%{_prefix}/lib/sysupdate.d/pv.feature.makalu
 
 install -d %{buildroot}%{_prefix}/lib/systemd
 gpg --dearmor < %{_sourcedir}/RPM-GPG-KEY-teamsbc > %{buildroot}%{_prefix}/lib/systemd/import-pubring.pgp
@@ -207,7 +239,15 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-i2c-display.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-podman.transfer.makalu \
        %{buildroot}%{_prefix}/lib/sysupdate.d/30-valkey.transfer.makalu \
-       %{buildroot}%{_prefix}/lib/sysupdate.d/30-cockpit.transfer.makalu
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-cockpit.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-tar.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-rsync.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-zip.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-unzip.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-file.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-mtr.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-tree.transfer.makalu \
+       %{buildroot}%{_prefix}/lib/sysupdate.d/30-pv.transfer.makalu
 
 %check
 
@@ -280,13 +320,30 @@ sed -i -e 's/@@DIST_VERSION@@/%{dist_version}/g' \
 %{_prefix}/lib/sysupdate.d/valkey.feature.makalu
 %{_prefix}/lib/sysupdate.d/30-cockpit.transfer.makalu
 %{_prefix}/lib/sysupdate.d/cockpit.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-tar.transfer.makalu
+%{_prefix}/lib/sysupdate.d/tar.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-rsync.transfer.makalu
+%{_prefix}/lib/sysupdate.d/rsync.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-zip.transfer.makalu
+%{_prefix}/lib/sysupdate.d/zip.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-unzip.transfer.makalu
+%{_prefix}/lib/sysupdate.d/unzip.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-file.transfer.makalu
+%{_prefix}/lib/sysupdate.d/file.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-mtr.transfer.makalu
+%{_prefix}/lib/sysupdate.d/mtr.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-tree.transfer.makalu
+%{_prefix}/lib/sysupdate.d/tree.feature.makalu
+%{_prefix}/lib/sysupdate.d/30-pv.transfer.makalu
+%{_prefix}/lib/sysupdate.d/pv.feature.makalu
 %{_prefix}/lib/systemd/import-pubring.pgp
 
 %post makalu -p <lua>
 local image_id = os.getenv("IMAGE_ID")
 if image_id then
     local sysupdate_dir = rpm.expand("%{_prefix}") .. "/lib/sysupdate.d/"
-    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer", "30-lm-sensors.transfer", "30-jq.transfer", "30-tcpdump.transfer", "30-htop.transfer", "30-iperf3.transfer", "30-ethtool.transfer", "30-smartmontools.transfer", "30-nvme-cli.transfer", "30-bind-utils.transfer", "30-ripgrep.transfer", "30-nmap.transfer", "30-fio.transfer", "30-i2c-tools.transfer", "30-bpftrace.transfer", "30-i2c-display.transfer", "30-podman.transfer", "30-valkey.transfer", "30-cockpit.transfer"}
+    local transfers = {"10-uki.transfer", "20-usr.transfer", "30-tmux.transfer", "30-screen.transfer", "30-weechat.transfer", "30-usbutils.transfer", "30-pciutils.transfer", "30-lsof.transfer", "30-strace.transfer", "30-mosquitto.transfer", "30-copyparty.transfer", "30-haproxy.transfer", "30-lm-sensors.transfer", "30-jq.transfer", "30-tcpdump.transfer", "30-htop.transfer", "30-iperf3.transfer", "30-ethtool.transfer", "30-smartmontools.transfer", "30-nvme-cli.transfer", "30-bind-utils.transfer", "30-ripgrep.transfer", "30-nmap.transfer", "30-fio.transfer", "30-i2c-tools.transfer", "30-bpftrace.transfer", "30-i2c-display.transfer", "30-podman.transfer", "30-valkey.transfer", "30-cockpit.transfer",
+        "30-tar.transfer", "30-rsync.transfer", "30-zip.transfer", "30-unzip.transfer", "30-file.transfer", "30-mtr.transfer", "30-tree.transfer", "30-pv.transfer"}
     for _, name in ipairs(transfers) do
         local path = sysupdate_dir .. name
         local f = io.open(path, "r")
@@ -304,6 +361,9 @@ if image_id then
 end
 
 %changelog
+* Sat Nov 21 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-25
+- Add optional tar, rsync, zip, unzip, file, mtr, tree, and pv extensions.
+
 * Tue Nov 17 2026 Simon de Vlieger <cmdr@supakeen.com> - %{fedora}-24
 - Ship an optional Cockpit sysupdate feature and transfer for Makalu.
 

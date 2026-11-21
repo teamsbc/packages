@@ -1,0 +1,4 @@
+[Feature]
+Description=Extract ZIP archives
+Documentation=https://packages.fedoraproject.org/pkgs/unzip/unzip/
+Enabled=false

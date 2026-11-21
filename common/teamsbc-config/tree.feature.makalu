@@ -1,0 +1,4 @@
+[Feature]
+Description=Display directory trees
+Documentation=https://packages.fedoraproject.org/pkgs/tree/tree/
+Enabled=false

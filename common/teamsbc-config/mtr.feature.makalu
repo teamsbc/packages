@@ -1,0 +1,4 @@
+[Feature]
+Description=Diagnose network routes and packet loss
+Documentation=https://github.com/traviscross/mtr
+Enabled=false

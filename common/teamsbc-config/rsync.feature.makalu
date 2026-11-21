@@ -1,0 +1,4 @@
+[Feature]
+Description=Synchronize files locally or remotely
+Documentation=https://rsync.samba.org/documentation.html
+Enabled=false

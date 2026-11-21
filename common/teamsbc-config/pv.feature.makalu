@@ -1,0 +1,4 @@
+[Feature]
+Description=Monitor data transfer through a pipe
+Documentation=https://www.ivarch.com/programs/pv.shtml
+Enabled=false

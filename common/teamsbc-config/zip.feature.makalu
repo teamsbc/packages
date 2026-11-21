@@ -1,0 +1,4 @@
+[Feature]
+Description=Create ZIP archives
+Documentation=https://packages.fedoraproject.org/pkgs/zip/zip/
+Enabled=false

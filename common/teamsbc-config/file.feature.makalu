@@ -1,0 +1,4 @@
+[Feature]
+Description=Identify file types
+Documentation=https://packages.fedoraproject.org/pkgs/file/file/
+Enabled=false
